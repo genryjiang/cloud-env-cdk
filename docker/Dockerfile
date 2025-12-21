@@ -1,4 +1,6 @@
-# Download base image ubuntu 22.04 (supported by RTi Cert)
+# install java
+FROM eclipse-temurin:8-jdk-jammy
+# Required base OS
 FROM ubuntu:22.04
 # syntax=docker/dockerfile:1
 
@@ -9,6 +11,8 @@ LABEL description="Sunswift EMBD (High Level) Containerised Development Environm
 # Disable Prompt During Packages Installation
 ARG DEBIAN_FRONTEND=noninteractive
 
+
+
 # Set locale
 RUN apt-get clean && apt update && apt install -y locales software-properties-common
 RUN locale-gen en_US en_US.UTF-8
@@ -16,7 +20,13 @@ ENV LC_ALL en_US.UTF-8
 ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US.UTF-8
 
-# Add ROS2 apt repository
+# Copy JDK onto ubuntu image
+# Copy the JDK into the Ubuntu image
+COPY --from=jdk /opt/java/openjdk /opt/java/openjdk
+ENV JAVA_HOME=/opt/java/openjdk
+ENV PATH="$JAVA_HOME/bin:$PATH"
+
+# Add ROS2 apt repository (this is needed for some fuckass reason idk why - DO NOT DELETE)
 RUN apt update && apt install -y curl gnupg2 lsb-release && \
 	curl -s https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc | apt-key add - && \
 	sh -c 'echo "deb [arch=$(dpkg --print-architecture)] http://packages.ros.org/ros2/ubuntu $(lsb_release -cs) main" > /etc/apt/sources.list.d/ros2-latest.list'
@@ -133,6 +143,7 @@ RUN cd /usr/local/qnx && \
 
 WORKDIR /workspace
 
+RUN java -version && javac -version
 RUN /bin/bash -c "echo 'source $HOME/qnx800/qnxsdp-env.sh' >> ~/.bashrc"
 CMD ["/bin/bash", "-i"]
 

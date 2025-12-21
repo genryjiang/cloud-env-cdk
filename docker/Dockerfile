@@ -128,7 +128,7 @@ RUN cd /usr/local/qnx && \
 	requests
 
 # Add QNX SDP + Additional (dev-can-linux (pre built), mosquitto, etc) --> Should be in QNX800 folder (upload once built)
-COPY .qnx /home/${USER_NAME}/.qnx
+# COPY .qnx /home/${USER_NAME}/.qnx
 # COPY qnx800 /home/${USER_NAME}/qnx800
 
 WORKDIR /workspace

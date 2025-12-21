@@ -39,6 +39,11 @@ export class Srp130AwsInfraStack extends Stack {
     // No docker image scanning needed - this isn't an application that isn't exposed to the public (just a dev environment)
     const embd_ecr = new ecr.Repository(this, "embd_dev_ecr", {
         imageTagMutability: ecr.TagMutability.IMMUTABLE_WITH_EXCLUSION,
+        imageTagMutabilityExclusionFilters: [
+          ecr.ImageTagMutabilityExclusionFilter.wildcard('latest-*'),
+          ecr.ImageTagMutabilityExclusionFilter.wildcard('test-*'),
+          ecr.ImageTagMutabilityExclusionFilter.wildcard('dev-*')
+        ],
     });
     const user = new iam.User(this, 'User');
     ecr.AuthorizationToken.grantRead(user);

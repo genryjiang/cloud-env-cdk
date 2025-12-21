@@ -1,5 +1,5 @@
-# Download base image ubuntu 24.04 (supported by RTi Cert)
-FROM ubuntu:24.04
+# Download base image ubuntu 22.04 (supported by RTi Cert)
+FROM ubuntu:22.04
 # syntax=docker/dockerfile:1
 
 # LABEL about the custom image

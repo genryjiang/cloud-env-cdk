@@ -1,0 +1,33 @@
+version: 0.2
+
+env:
+  variables:
+    AWS_DEFAULT_REGION: ap-southeast-2
+    S3_BUCKET: sr8-embd-dev-env-ap-southeast-2
+    QNX_SDP: qnx/qnx-sdp.tar.gz
+    RTI: rti/rti_connext.tar
+    IMAGE_TAG: latest
+    ECR_URL: 124921357472.dkr.ecr.ap-southeast-2.amazonaws.com/srp130awsinfrastack-embddevecr271e0e81-u0ngsbnmb3rj
+
+phases:
+  pre_build:
+    commands:
+      - set -euo pipefail
+      - mkdir -p artifacts
+      - aws ecr get-login-password --region ap-southeast-2 | docker login --username AWS --password-stdin $ECR_URL
+      - aws s3 cp "s3://${S3_BUCKET}/${QNX_SDP}" "artifacts/qnx800.tar.gz"
+      - aws s3 cp "s3://${S3_BUCKET}/${RTI}"  "artifacts/rti_connext.tar"
+  build:
+    commands:
+      - docker build -t myimage:{$IMAGE_TAG} .
+      - docker tag $IMAGE_REPO_NAME:$IMAGE_TAG $ECR_URL/$IMAGE_REPO_NAME:$IMAGE_TAG
+      - docker tag $IMAGE_REPO_NAME:$IMAGE_TAG $ECR_URL/$IMAGE_REPO_NAME:$GIT_HASH
+  post_build:
+    commands:
+      - echo Pushing docker image...
+      - docker push $ECR_URL/IMAGE_REPO_NAME:$IMAGE_TAG
+      - |
+        if expr "${IMAGE_TAG}" : "latest-" > /dev/null; then
+          docker push $ECR_URL/$IMAGE_REPO_NAME:$GIT_HASH
+        fi
+

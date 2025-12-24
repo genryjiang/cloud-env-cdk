@@ -1,7 +1,6 @@
 import { CfnOutput, Duration, RemovalPolicy, Stack, StackProps } from 'aws-cdk-lib';
 import * as s3 from 'aws-cdk-lib/aws-s3';
 import * as codebuild from 'aws-cdk-lib/aws-codebuild';
-// Cloudwatch pipe
 import * as ecr from 'aws-cdk-lib/aws-ecr';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import { Construct } from 'constructs';
@@ -9,17 +8,6 @@ import { Construct } from 'constructs';
 export class Srp130AwsInfraStack extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props);
-
-    // SAMPLE - DELETE LATER
-    /*
-    const queue = new sqs.Queue(this, 'Srp130AwsInfraQueue', {
-      visibilityTimeout: Duration.seconds(300)
-    });
-
-    const topic = new sns.Topic(this, 'Srp130AwsInfraTopic');
-
-    topic.addSubscription(new subs.SqsSubscription(queue));
-    */
 
     const sdp_s3 = new s3.Bucket(this,'embd-high-level-infra', {
       bucketName: `sr8-embd-dev-env-${this.region}`,
@@ -45,12 +33,19 @@ export class Srp130AwsInfraStack extends Stack {
           ecr.ImageTagMutabilityExclusionFilter.wildcard('dev-*')
         ],
     });
-    const user = new iam.User(this, 'User');
-    ecr.AuthorizationToken.grantRead(user);
 
+    // Create policy that allows for reading and writing, then attach this policy to a group then add this group
+    // Authenticate group for ecr pulling
+    const groupAccess = iam.Group.fromGroupName(this, 'dev-embd-access', 'Embd-Read');
+    ecr.AuthorizationToken.grantRead(groupAccess);
+    const codebuild_enable = new iam.Role(this, 'codebuild-ecr-push', {
+      assumedBy: new iam.ServicePrincipal('codebuild.amazonaws.com'),
+    });
+    embd_ecr.grantPullPush(codebuild_enable)
+
+    // Build spec for docker container
     /*const dev_env_codebuild = new codebuild.Project(this, 'SR8-EMBD-Dev', {
       buildSpec: // ADD BUILDSPEC to build docker container
-
     });
     */
   }

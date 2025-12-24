@@ -1,5 +1,5 @@
 # install java
-FROM eclipse-temurin:8-jdk-jammy
+FROM eclipse-temurin:8-jdk-jammy AS jdk
 # Required base OS
 FROM ubuntu:22.04
 # syntax=docker/dockerfile:1
@@ -10,8 +10,6 @@ LABEL description="Sunswift EMBD (High Level) Containerised Development Environm
 
 # Disable Prompt During Packages Installation
 ARG DEBIAN_FRONTEND=noninteractive
-
-
 
 # Set locale
 RUN apt-get clean && apt update && apt install -y locales software-properties-common
@@ -25,6 +23,7 @@ ENV LANGUAGE en_US.UTF-8
 COPY --from=jdk /opt/java/openjdk /opt/java/openjdk
 ENV JAVA_HOME=/opt/java/openjdk
 ENV PATH="$JAVA_HOME/bin:$PATH"
+
 
 # Add ROS2 apt repository (this is needed for some fuckass reason idk why - DO NOT DELETE)
 RUN apt update && apt install -y curl gnupg2 lsb-release && \
@@ -87,6 +86,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     cppcheck \
  && rm -rf /var/lib/apt/lists/*
 
+# 
+
 # Adding user
 ARG USER_NAME
 ARG GROUP_NAME
@@ -138,12 +139,11 @@ RUN cd /usr/local/qnx && \
 	requests
 
 # Add QNX SDP + Additional (dev-can-linux (pre built), mosquitto, etc) --> Should be in QNX800 folder (upload once built)
-# COPY .qnx /home/${USER_NAME}/.qnx
-# COPY qnx800 /home/${USER_NAME}/qnx800
+COPY .qnx /home/${USER_NAME}/.qnx
+COPY qnx800 /home/${USER_NAME}/qnx800
 
 WORKDIR /workspace
 
 RUN java -version && javac -version
 RUN /bin/bash -c "echo 'source $HOME/qnx800/qnxsdp-env.sh' >> ~/.bashrc"
 CMD ["/bin/bash", "-i"]
-

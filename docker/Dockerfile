@@ -86,8 +86,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     cppcheck \
  && rm -rf /var/lib/apt/lists/*
 
-# 
-
 # Adding user
 ARG USER_NAME
 ARG GROUP_NAME
@@ -138,9 +136,21 @@ RUN cd /usr/local/qnx && \
 	pybind11 \
 	requests
 
-# Add QNX SDP + Additional (dev-can-linux (pre built), mosquitto, etc) --> Should be in QNX800 folder (upload once built)
-COPY .qnx /home/${USER_NAME}/.qnx
-COPY qnx800 /home/${USER_NAME}/qnx800
+
+# Copy s3 archives taken from codebuild
+# Unpack into /home/usr-name/
+# Copy s3 archives taken from codebuild
+COPY artifacts/qnx800.tar.gz /tmp/qnx800.tar.gz
+COPY artifacts/rti_connext.tar /tmp/rti_connext.tar
+
+# Unpack into /home/${USER_NAME}/ (or subfolders), then clean up
+RUN tar -xzf /tmp/qnx800.tar.gz -C /home/${USER_NAME} --no-same-owner --no-same-permissions \
+ && tar -xf  /tmp/rti_connext.tar -C /home/${USER_NAME} --no-same-owner --no-same-permissions \
+ && rm -f /tmp/qnx800.tar.gz /tmp/rti_connext.tar \
+ && chown -R ${USER_NAME}:${GROUP_NAME} /home/${USER_NAME}
+
+
+
 
 WORKDIR /workspace
 

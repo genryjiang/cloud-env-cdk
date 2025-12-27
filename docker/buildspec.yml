@@ -19,13 +19,13 @@ phases:
       - aws s3 cp "s3://${S3_BUCKET}/${RTI}"  "artifacts/rti_connext.tar"
   build:
     commands:
-      - docker build -t myimage:{$IMAGE_TAG} .
+      - docker build -t $IMAGE_REPO_NAME:$IMAGE_TAG .
       - docker tag $IMAGE_REPO_NAME:$IMAGE_TAG $ECR_URL/$IMAGE_REPO_NAME:$IMAGE_TAG
       - docker tag $IMAGE_REPO_NAME:$IMAGE_TAG $ECR_URL/$IMAGE_REPO_NAME:$GIT_HASH
   post_build:
     commands:
       - echo Pushing docker image...
-      - docker push $ECR_URL/IMAGE_REPO_NAME:$IMAGE_TAG
+      - docker push $ECR_URL/$IMAGE_REPO_NAME:$IMAGE_TAG
       - |
         if expr "${IMAGE_TAG}" : "latest-" > /dev/null; then
           docker push $ECR_URL/$IMAGE_REPO_NAME:$GIT_HASH

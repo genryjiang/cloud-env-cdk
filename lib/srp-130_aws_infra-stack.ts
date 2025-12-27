@@ -3,11 +3,21 @@ import * as s3 from 'aws-cdk-lib/aws-s3';
 import * as codebuild from 'aws-cdk-lib/aws-codebuild';
 import * as ecr from 'aws-cdk-lib/aws-ecr';
 import * as iam from 'aws-cdk-lib/aws-iam';
+import * as codeconnections from 'aws-cdk-lib/aws-codeconnections';
+import * as codestarconnections from 'aws-cdk-lib/aws-codestarconnections';
+import * as codepipeline from 'aws-cdk-lib/aws-codepipeline';
+import * as codepipeline_actions from 'aws-cdk-lib/aws-codepipeline-actions';
 import { Construct } from 'constructs';
 
 export class Srp130AwsInfraStack extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props);
+
+    // setup codestar connection (aws connector)
+    const github_connector = new codestarconnections.CfnConnection(this, 'GithubConnection', {
+      connectionName: 'srp8-130-github-connection',
+      providerType: 'GitHub'
+    });
 
     const sdp_s3 = new s3.Bucket(this,'embd-high-level-infra', {
       bucketName: `sr8-embd-dev-env-${this.region}`,
@@ -36,17 +46,123 @@ export class Srp130AwsInfraStack extends Stack {
 
     // Create policy that allows for reading and writing, then attach this policy to a group then add this group
     // Authenticate group for ecr pulling
-    const groupAccess = iam.Group.fromGroupName(this, 'dev-embd-access', 'Embd-Read');
-    ecr.AuthorizationToken.grantRead(groupAccess);
+    const group_access = iam.Group.fromGroupName(this, 'dev-embd-access', 'Embd-Read');
+    ecr.AuthorizationToken.grantRead(group_access);
     const codebuild_enable = new iam.Role(this, 'codebuild-ecr-push', {
       assumedBy: new iam.ServicePrincipal('codebuild.amazonaws.com'),
     });
     embd_ecr.grantPullPush(codebuild_enable)
 
-    // Build spec for docker container
-    /*const dev_env_codebuild = new codebuild.Project(this, 'SR8-EMBD-Dev', {
-      buildSpec: // ADD BUILDSPEC to build docker container
+    // S3 Bucket for codepipline artifacts
+   const artifacts_bucket = new s3.Bucket(this, 'PipelineArtifacts', {
+      bucketName: `my-pipeline-artifacts-${this.account}-${this.region}`,
+      versioned: true,
+      encryption: s3.BucketEncryption.S3_MANAGED,
+      blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
+      removalPolicy: RemovalPolicy.DESTROY, // Use RETAIN for production
+      autoDeleteObjects: true, // Use false for production
+      lifecycleRules: [
+        {
+          id: 'DeleteOldArtifacts',
+          enabled: true,
+          expiration: Duration.days(30), // Clean up artifacts after 30 days
+        },
+      ],
     });
-    */
+
+      const pipeline_role = new iam.Role(this, 'PipelineServiceRole', {
+      assumedBy: new iam.ServicePrincipal('codepipeline.amazonaws.com'),
+      managedPolicies: [
+        iam.ManagedPolicy.fromAwsManagedPolicyName('AWSCodePipelineServiceRole'),
+      ],
+    });
+
+    // Add permissions for CodeStar connections and CodeBuild
+    pipeline_role.addToPolicy(new iam.PolicyStatement({
+      effect: iam.Effect.ALLOW,
+        actions: [
+          'codestar-connections:UseConnection',
+          'codebuild:BatchGetBuilds',
+          'codebuild:StartBuild',
+        ],
+        resources: ['*'],
+    }));
+
+    // Grant S3 permissions to pipeline role
+    artifacts_bucket.grantReadWrite(pipeline_role);
+    const source_artifact = new codepipeline.Artifact('SourceArtifact');
+    // Build spec for docker container
+    const dev_env_codebuild = new codebuild.Project(this, 'SR8-EMBD-Dev', {
+      buildSpec: codebuild.BuildSpec.fromSourceFilename('docker/buildspec.yml'),
+      source: codebuild.Source.gitHub({
+        owner: 'UNSW-Sunswift',
+        repo: 'EMBD-High-Dev-Infra'
+      }),
+      projectName: 'embd-dev-env',
+      environment: {
+        buildImage: codebuild.LinuxBuildImage.STANDARD_7_0,
+        privileged: true,
+        computeType: codebuild.ComputeType.MEDIUM,
+        environmentVariables: {
+          'AWS_DEFAULT_REGION': { value: 'ap-southeast-2' },
+          'AWS_ACCOUNT_ID': { value: this.account },
+          'IMAGE_REPO_NAME': { value: 'your-image-name' },
+          'IMAGE_TAG': { value: 'latest-arm64' }, // or latest-x86
+          'ECR_URL': { value: `${this.account}.dkr.ecr.ap-southeast-2.amazonaws.com` },
+          'GIT_HASH': {
+            type: codebuild.BuildEnvironmentVariableType.PLAINTEXT,
+            value: '${CODEBUILD_RESOLVED_SOURCE_VERSION}' // This gives you the git commit hash
+          },
+        }
+      }
+    });
+    const dev_build_pipeline = new codepipeline.Pipeline(this, 'EMBD-High-Level-Infra-Pipeline', {
+      pipelineName: 'EMBD-High-Level-Infra-Pipeline',
+      role: pipeline_role,
+      artifactBucket: artifacts_bucket,
+      stages: [
+        {
+          stageName: 'Source',
+          actions: [
+            new codepipeline_actions.CodeStarConnectionsSourceAction({
+              actionName: 'Source',
+              owner: 'UNSW-Sunswift',
+              repo: 'EMBD-High-Dev-Infra',
+              branch: 'main',
+              output: source_artifact,
+              connectionArn: github_connector.attrConnectionArn,
+            }),
+          ],
+        },
+        {
+          stageName: 'Build',
+          actions: [
+            new codepipeline_actions.CodeBuildAction({
+              actionName: 'Build',
+              project: dev_env_codebuild,
+              input: source_artifact,
+            }),
+          ],
+        },
+      ],
+    });
+    // Update policies/grant permissions
+   sdp_s3.grantRead(dev_env_codebuild);
+   dev_env_codebuild.addToRolePolicy(new iam.PolicyStatement({
+      effect: iam.Effect.ALLOW,
+      actions: [
+        'ecr:GetDownloadUrlForLayer',
+        'ecr:BatchGetImage',
+        'ecr:GetAuthorizationToken',
+      ],
+      resources: ['*'],
+   }));
+
+   // Output logs
+   new CfnOutput(this, 'ConnectionARN', {
+      value: github_connector.attrConnectionArn,
+      description: 'CodeStar Connection ARN for SRP8-130'
+    })
+
   }
 }

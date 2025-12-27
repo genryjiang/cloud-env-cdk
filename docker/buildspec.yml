@@ -14,20 +14,29 @@ phases:
     commands:
       - set -euo pipefail
       - mkdir -p artifacts
-      - aws ecr get-login-password --region ap-southeast-2 | docker login --username AWS --password-stdin $ECR_URL
+      - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $ECR_URL
       - aws s3 cp "s3://${S3_BUCKET}/${QNX_SDP}" "artifacts/qnx800.tar.gz"
-      - aws s3 cp "s3://${S3_BUCKET}/${RTI}"  "artifacts/rti_connext.tar"
+      - aws s3 cp "s3://${S3_BUCKET}/${RTI}" "artifacts/rti_connext.tar"
   build:
     commands:
-      - docker build -t $IMAGE_REPO_NAME:$IMAGE_TAG .
-      - docker tag $IMAGE_REPO_NAME:$IMAGE_TAG $ECR_URL/$IMAGE_REPO_NAME:$IMAGE_TAG
-      - docker tag $IMAGE_REPO_NAME:$IMAGE_TAG $ECR_URL/$IMAGE_REPO_NAME:$GIT_HASH
+      # Build for ARM64 (macOS Apple Silicon)
+      - docker build --platform linux/arm64 -t $IMAGE_REPO_NAME:macos-arm64-$GIT_HASH .
+      - docker build --platform linux/arm64 -t $IMAGE_REPO_NAME:macos-arm64-latest .
+
+      # Build for AMD64 (Windows/Intel)
+      - docker build --platform linux/amd64 -t $IMAGE_REPO_NAME:windows-amd64-$GIT_HASH .
+      - docker build --platform linux/amd64 -t $IMAGE_REPO_NAME:windows-amd64-latest .
+
+      # Tag for ECR
+      - docker tag $IMAGE_REPO_NAME:macos-arm64-$GIT_HASH $ECR_URL/$IMAGE_REPO_NAME:macos-arm64-$GIT_HASH
+      - docker tag $IMAGE_REPO_NAME:macos-arm64-latest $ECR_URL/$IMAGE_REPO_NAME:macos-arm64-latest
+      - docker tag $IMAGE_REPO_NAME:windows-amd64-$GIT_HASH $ECR_URL/$IMAGE_REPO_NAME:windows-amd64-$GIT_HASH
+      - docker tag $IMAGE_REPO_NAME:windows-amd64-latest $ECR_URL/$IMAGE_REPO_NAME:windows-amd64-latest
   post_build:
     commands:
-      - echo Pushing docker image...
-      - docker push $ECR_URL/$IMAGE_REPO_NAME:$IMAGE_TAG
-      - |
-        if expr "${IMAGE_TAG}" : "latest-" > /dev/null; then
-          docker push $ECR_URL/$IMAGE_REPO_NAME:$GIT_HASH
-        fi
+      - echo Pushing docker images...
+      - docker push $ECR_URL/$IMAGE_REPO_NAME:macos-arm64-$GIT_HASH
+      - docker push $ECR_URL/$IMAGE_REPO_NAME:macos-arm64-latest
+      - docker push $ECR_URL/$IMAGE_REPO_NAME:windows-amd64-$GIT_HASH
+      - docker push $ECR_URL/$IMAGE_REPO_NAME:windows-amd64-latest
 

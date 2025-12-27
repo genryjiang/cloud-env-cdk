@@ -106,12 +106,11 @@ export class Srp130AwsInfraStack extends Stack {
         environmentVariables: {
           'AWS_DEFAULT_REGION': { value: 'ap-southeast-2' },
           'AWS_ACCOUNT_ID': { value: this.account },
-          'IMAGE_REPO_NAME': { value: 'your-image-name' },
-          'IMAGE_TAG': { value: 'latest-arm64' }, // or latest-x86
+          'IMAGE_REPO_NAME': { value: embd_ecr.repositoryName },
           'ECR_URL': { value: `${this.account}.dkr.ecr.ap-southeast-2.amazonaws.com` },
           'GIT_HASH': {
             type: codebuild.BuildEnvironmentVariableType.PLAINTEXT,
-            value: '${CODEBUILD_RESOLVED_SOURCE_VERSION}' // This gives you the git commit hash
+            value: '${CODEBUILD_RESOLVED_SOURCE_VERSION}'
           },
         }
       }

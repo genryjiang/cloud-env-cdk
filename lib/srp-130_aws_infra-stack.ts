@@ -123,21 +123,25 @@ export class Srp130AwsInfraStack extends Stack {
       thumbprints: ['6938fd4d98bab03faadb97b34396831e3780aea1'], // GitHub's thumbprint
     });
 
-      const githubActionRunCodebuildPolicy = new iam.ManagedPolicy(this, 'GithubActionRunCodebuild', {
-      managedPolicyName: 'GithubActionRunCodebuild',
+      const githubStartCodePipelinePolicy = new iam.ManagedPolicy(this, 'GithubActionRunCodebuild', {
+      managedPolicyName: 'GithubActionStartPipeline',
       statements: [
         new iam.PolicyStatement({
           effect: iam.Effect.ALLOW,
           actions: [
-            'codebuild:StartBuild',
-            'codebuild:BatchGetBuilds'
+            'codepipeline:StartPipelineExecution',
+            'codepipeline:GetPipelineExecution',
+            'codepipeline:ListPipelineExecutions',
+            'codepipeline:GetPipelineState',
+            'codebuild:BatchGetBuilds',
+            'codebuild:ListBuildsForProject',
           ],
           resources: [
             `arn:aws:codebuild:${this.region}:${this.account}:project/embd-dev-env`,
             `arn:aws:codepipeline:${this.region}:${this.account}:EMBD-High-Level-Infra-Pipeline`,
             `arn:aws:logs:${this.region}:${this.account}:log-group:/aws/codebuild/embd-dev-env:*`,
-            dev_env_codebuild.projectArn,
-
+            `arn:aws:logs:${this.region}:${this.account}:log-group:/aws/codebuild/embd-dev-env:log-stream:*`,
+            dev_env_codebuild.projectArn
           ]
         }),
         new iam.PolicyStatement({
@@ -169,7 +173,7 @@ export class Srp130AwsInfraStack extends Stack {
         }
       ),
       maxSessionDuration: Duration.hours(1),
-      managedPolicies: [githubActionRunCodebuildPolicy]
+      managedPolicies: [githubStartCodePipelinePolicy]
     });
 
     new CfnOutput(this, 'GithubActionCodebuildRoleArn', {

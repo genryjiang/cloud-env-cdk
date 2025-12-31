@@ -143,11 +143,14 @@ RUN cd /usr/local/qnx && \
 COPY artifacts/qnx800.tar.gz /tmp/qnx800.tar.gz
 COPY artifacts/rti_connext.tar /tmp/rti_connext.tar
 
+USER root
 # Unpack into /home/${USER_NAME}/ (or subfolders), then clean up
 RUN tar -xzf /tmp/qnx800.tar.gz -C /home/${USER_NAME} --no-same-owner --no-same-permissions \
  && tar -xf  /tmp/rti_connext.tar -C /home/${USER_NAME} --no-same-owner --no-same-permissions \
  && rm -f /tmp/qnx800.tar.gz /tmp/rti_connext.tar \
  && chown -R ${USER_NAME}:${GROUP_NAME} /home/${USER_NAME}
+
+USER ${USER_NAME}
 
 
 

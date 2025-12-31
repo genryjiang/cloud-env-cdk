@@ -4,7 +4,6 @@ import * as codebuild from 'aws-cdk-lib/aws-codebuild';
 import * as ecr from 'aws-cdk-lib/aws-ecr';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import * as codeconnections from 'aws-cdk-lib/aws-codeconnections';
-import * as codestarconnections from 'aws-cdk-lib/aws-codestarconnections';
 import * as codepipeline from 'aws-cdk-lib/aws-codepipeline';
 import * as codepipeline_actions from 'aws-cdk-lib/aws-codepipeline-actions';
 import { Construct } from 'constructs';
@@ -13,10 +12,66 @@ export class Srp130AwsInfraStack extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props);
 
-    // setup codestar connection (aws connector)
-    const github_connector = new codestarconnections.CfnConnection(this, 'GithubConnection', {
+    // setup codeconnections (aws connector)
+    const github_connector = new codeconnections.CfnConnection(this, 'GithubConnection', {
       connectionName: 'srp8-130-github-connection',
       providerType: 'GitHub'
+    });
+
+       const githubOidcProvider = new iam.OpenIdConnectProvider(this, 'GitHubOidcProvider', {
+      url: 'https://token.actions.githubusercontent.com',
+      clientIds: ['sts.amazonaws.com'],
+      thumbprints: ['6938fd4d98bab03faadb97b34396831e3780aea1'], // GitHub's thumbprint
+    });
+
+      const githubActionRunCodebuildPolicy = new iam.ManagedPolicy(this, 'GithubActionRunCodebuild', {
+      managedPolicyName: 'GithubActionRunCodebuild',
+      statements: [
+        new iam.PolicyStatement({
+          effect: iam.Effect.ALLOW,
+          actions: [
+            'codebuild:StartBuild',
+            'codebuild:BatchGetBuilds'
+          ],
+          resources: [
+            `arn:aws:codebuild:${this.region}:${this.account}:project/embedded-highlevel-latest-arm64`,
+            `arn:aws:codebuild:${this.region}:${this.account}:project/embedded-lowlevel`
+          ]
+        }),
+        new iam.PolicyStatement({
+          effect: iam.Effect.ALLOW,
+          actions: [
+            'logs:GetLogEvents'
+          ],
+          resources: [
+            `arn:aws:logs:${this.region}:${this.account}:log-group:/aws/codebuild/embd-dev-env:*`,
+          ]
+        })
+      ]
+    });
+
+     const githubActionCodebuildRole = new iam.Role(this, 'GithubActionCodebuildRole', {
+      roleName: 'GithubActionCodebuildRole',
+      assumedBy: new iam.WebIdentityPrincipal(
+        githubOidcProvider.openIdConnectProviderArn,
+        {
+          'StringEquals': {
+            'token.actions.githubusercontent.com:aud': 'sts.amazonaws.com'
+          },
+          'StringLike': {
+            'token.actions.githubusercontent.com:sub': [
+              'repo:UNSW-Sunswift/EMBD-High-Dev-Infra:*',
+            ]
+          }
+        }
+      ),
+      maxSessionDuration: Duration.hours(1),
+      managedPolicies: [githubActionRunCodebuildPolicy]
+    });
+
+    new CfnOutput(this, 'GithubActionCodebuildRoleArn', {
+      value: githubActionCodebuildRole.roleArn,
+      description: 'ARN of the GitHub Actions CodeBuild Role'
     });
 
     const sdp_s3 = new s3.Bucket(this,'embd-high-level-infra', {
@@ -46,7 +101,7 @@ export class Srp130AwsInfraStack extends Stack {
 
     // Create policy that allows for reading and writing, then attach this policy to a group then add this group
     // Authenticate group for ecr pulling
-    const group_access = iam.Group.fromGroupName(this, 'dev-embd-access', 'Embd-Read');
+    const group_access = iam.Group.fromGroupName(this, 'Embd-Read', 'dev-embd-access');
     ecr.AuthorizationToken.grantRead(group_access);
     const codebuild_enable = new iam.Role(this, 'codebuild-ecr-push', {
       assumedBy: new iam.ServicePrincipal('codebuild.amazonaws.com'),
@@ -72,9 +127,6 @@ export class Srp130AwsInfraStack extends Stack {
 
       const pipeline_role = new iam.Role(this, 'PipelineServiceRole', {
       assumedBy: new iam.ServicePrincipal('codepipeline.amazonaws.com'),
-      managedPolicies: [
-        iam.ManagedPolicy.fromAwsManagedPolicyName('AWSCodePipelineServiceRole'),
-      ],
     });
 
     // Add permissions for CodeStar connections and CodeBuild
@@ -99,6 +151,7 @@ export class Srp130AwsInfraStack extends Stack {
         repo: 'EMBD-High-Dev-Infra'
       }),
       projectName: 'embd-dev-env',
+      role: codebuild_enable,
       environment: {
         buildImage: codebuild.LinuxBuildImage.STANDARD_7_0,
         privileged: true,
@@ -118,7 +171,6 @@ export class Srp130AwsInfraStack extends Stack {
     const dev_build_pipeline = new codepipeline.Pipeline(this, 'EMBD-High-Level-Infra-Pipeline', {
       pipelineName: 'EMBD-High-Level-Infra-Pipeline',
       role: pipeline_role,
-      artifactBucket: artifacts_bucket,
       stages: [
         {
           stageName: 'Source',

@@ -6,8 +6,6 @@ env:
     S3_BUCKET: sr8-embd-dev-env-ap-southeast-2
     QNX_SDP: qnx/qnx-sdp.tar.gz
     RTI: rti/rti_connext.tar
-    IMAGE_TAG: latest
-    ECR_URL: 124921357472.dkr.ecr.ap-southeast-2.amazonaws.com/srp130awsinfrastack-embddevecr271e0e81-u0ngsbnmb3rj
 
 phases:
   pre_build:
@@ -20,12 +18,12 @@ phases:
   build:
     commands:
       # Build for ARM64 (macOS Apple Silicon)
-      - docker build --platform linux/arm64 -t $IMAGE_REPO_NAME:macos-arm64-$GIT_HASH .
-      - docker build --platform linux/arm64 -t $IMAGE_REPO_NAME:macos-arm64-latest .
+      - docker build --platform linux/arm64 --build-arg USER_NAME=developer --build-arg GROUP_NAME=developer --build-arg USER_ID=1000 --build-arg GROUP_ID=1000 --build-arg QNX_SDP_VERSION=8.0 -t $IMAGE_REPO_NAME:macos-arm64-$GIT_HASH .
+      - docker build --platform linux/arm64 --build-arg USER_NAME=developer --build-arg GROUP_NAME=developer --build-arg USER_ID=1000 --build-arg GROUP_ID=1000 --build-arg QNX_SDP_VERSION=8.0 -t $IMAGE_REPO_NAME:macos-arm64-latest .
 
       # Build for AMD64 (Windows/Intel)
-      - docker build --platform linux/amd64 -t $IMAGE_REPO_NAME:windows-amd64-$GIT_HASH .
-      - docker build --platform linux/amd64 -t $IMAGE_REPO_NAME:windows-amd64-latest .
+      - docker build --platform linux/amd64 --build-arg USER_NAME=developer --build-arg GROUP_NAME=developer --build-arg USER_ID=1000 --build-arg GROUP_ID=1000 --build-arg QNX_SDP_VERSION=8.0 -t $IMAGE_REPO_NAME:windows-amd64-$GIT_HASH .
+      - docker build --platform linux/amd64 --build-arg USER_NAME=developer --build-arg GROUP_NAME=developer --build-arg USER_ID=1000 --build-arg GROUP_ID=1000 --build-arg QNX_SDP_VERSION=8.0 -t $IMAGE_REPO_NAME:windows-amd64-latest .
 
       # Tag for ECR
       - docker tag $IMAGE_REPO_NAME:macos-arm64-$GIT_HASH $ECR_URL/$IMAGE_REPO_NAME:macos-arm64-$GIT_HASH

@@ -8,14 +8,14 @@ jobs:
   BuildDockerImages:
     runs-on: ubuntu-latest
     steps:
-    - name: Configure AWS Credentials
-      uses: aws-actions/configure-aws-credentials@v2
-      with:
-        role-to-assume: arn:aws:iam::124921357472:role/GithubActionCodebuildRole
-        role-session-name: github_oidc_push
-        aws-region: ap-southeast-2
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: arn:aws:iam::124921357472:role/GithubActionCodebuildRole
+          role-session-name: github_oidc_push
+          aws-region: ap-southeast-2
 
-    - name: Start CodePipeline execution
+      - name: Start CodePipeline execution
         run: |
           aws codepipeline start-pipeline-execution \
             --name EMBD-High-Level-Infra-Pipeline

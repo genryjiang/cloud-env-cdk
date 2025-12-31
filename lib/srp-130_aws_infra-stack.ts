@@ -218,6 +218,11 @@ export class Srp130AwsInfraStack extends Stack {
       resources: ['*'],
    }));
 
+  githubActionCodebuildRole.addToPrincipalPolicy(new iam.PolicyStatement({
+    actions: ['codepipeline:StartPipelineExecution'],
+    resources: [dev_build_pipeline.pipelineArn],
+  }));
+
    // Output logs
    new CfnOutput(this, 'ConnectionARN', {
       value: github_connector.attrConnectionArn,

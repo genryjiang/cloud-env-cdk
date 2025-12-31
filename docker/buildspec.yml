@@ -21,19 +21,19 @@ phases:
       # - docker build --platform linux/arm64 --build-arg USER_NAME=developer --build-arg GROUP_NAME=developer --build-arg USER_ID=1000 --build-arg GROUP_ID=1000 --build-arg QNX_SDP_VERSION=8.0 -t $IMAGE_REPO_NAME:macos-arm64-$GIT_HASH .
       # - docker build --platform linux/arm64 --build-arg USER_NAME=developer --build-arg GROUP_NAME=developer --build-arg USER_ID=1000 --build-arg GROUP_ID=1000 --build-arg QNX_SDP_VERSION=8.0 -t $IMAGE_REPO_NAME:macos-arm64-latest .
 
-      # Build for AMD64 (Windows/Intel)
+      # Build for AMD64 (linux)
       - docker build --platform linux/amd64 -f docker/Dockerfile --build-arg USER_NAME=developer --build-arg GROUP_NAME=developer --build-arg USER_ID=1000 --build-arg GROUP_ID=1000 --build-arg QNX_SDP_VERSION=8.0 -t $IMAGE_REPO_NAME:windows-amd64-$GIT_HASH .
       - docker build --platform linux/amd64 -f docker/Dockerfile --build-arg USER_NAME=developer --build-arg GROUP_NAME=developer --build-arg USER_ID=1000 --build-arg GROUP_ID=1000 --build-arg QNX_SDP_VERSION=8.0 -t $IMAGE_REPO_NAME:windows-amd64-latest .
 
       # Tag for ECR
-      - docker tag $IMAGE_REPO_NAME:macos-arm64-$GIT_HASH $ECR_URL/$IMAGE_REPO_NAME:macos-arm64-$GIT_HASH
-      - docker tag $IMAGE_REPO_NAME:macos-arm64-latest $ECR_URL/$IMAGE_REPO_NAME:macos-arm64-latest
-      - docker tag $IMAGE_REPO_NAME:windows-amd64-$GIT_HASH $ECR_URL/$IMAGE_REPO_NAME:windows-amd64-$GIT_HASH
-      - docker tag $IMAGE_REPO_NAME:windows-amd64-latest $ECR_URL/$IMAGE_REPO_NAME:windows-amd64-latest
+      - docker tag $IMAGE_REPO_NAME:linux-amd64-$GIT_HASH $ECR_URL/$IMAGE_REPO_NAME:linux-amd64-$GIT_HASH
+      - docker tag $IMAGE_REPO_NAME:linux-amd64-latest $ECR_URL/$IMAGE_REPO_NAME:linux-amd64-latest
+      # - docker tag $IMAGE_REPO_NAME:macos-arm64-$GIT_HASH $ECR_URL/$IMAGE_REPO_NAME:macos-arm64-$GIT_HASH
+      # - docker tag $IMAGE_REPO_NAME:macos-arm64-latest $ECR_URL/$IMAGE_REPO_NAME:macos-arm64-latest
+      # - docker tag $IMAGE_REPO_NAME:windows-amd64-$GIT_HASH $ECR_URL/$IMAGE_REPO_NAME:windows-amd64-$GIT_HASH
+      # - docker tag $IMAGE_REPO_NAME:windows-amd64-latest $ECR_URL/$IMAGE_REPO_NAME:windows-amd64-latest
   post_build:
     commands:
       - echo Pushing docker images...
-      - docker push $ECR_URL/$IMAGE_REPO_NAME:macos-arm64-$GIT_HASH
-      - docker push $ECR_URL/$IMAGE_REPO_NAME:macos-arm64-latest
-      - docker push $ECR_URL/$IMAGE_REPO_NAME:windows-amd64-$GIT_HASH
-      - docker push $ECR_URL/$IMAGE_REPO_NAME:windows-amd64-latest
+      - docker push $ECR_URL/$IMAGE_REPO_NAME:linux-amd64-$GIT_HASH
+      - docker push $ECR_URL/$IMAGE_REPO_NAME:linux-amd64-latest

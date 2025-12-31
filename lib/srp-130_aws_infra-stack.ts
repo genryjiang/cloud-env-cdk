@@ -41,7 +41,7 @@ export class Srp130AwsInfraStack extends Stack {
           ],
           resources: [
             `arn:aws:codebuild:${this.region}:${this.account}:project/embd-dev-env`,
-            `arn:aws:codepipeline:${this.region}:${this.account}:pipeline/EMBD-High-Level-Infra-Pipeline`,
+            `arn:aws:codepipeline:${this.region}:${this.account}:EMBD-High-Level-Infra-Pipeline`,
             `arn:aws:logs:${this.region}:${this.account}:log-group:/aws/codebuild/embd-dev-env:*`
           ]
         })

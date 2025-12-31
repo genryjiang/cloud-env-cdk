@@ -180,7 +180,7 @@ export class Srp130AwsInfraStack extends Stack {
               branch: 'main',
               output: source_artifact,
               connectionArn: github_connector.attrConnectionArn,
-              triggerOnPush: false,
+              triggerOnPush: true,
             }),
           ],
         },

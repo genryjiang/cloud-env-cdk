@@ -34,8 +34,7 @@ export class Srp130AwsInfraStack extends Stack {
             'codebuild:BatchGetBuilds'
           ],
           resources: [
-            `arn:aws:codebuild:${this.region}:${this.account}:project/embedded-highlevel-latest-arm64`,
-            `arn:aws:codebuild:${this.region}:${this.account}:project/embedded-lowlevel`
+            `arn:aws:codebuild:${this.region}:${this.account}:project/embd-dev-env`
           ]
         }),
         new iam.PolicyStatement({
@@ -73,17 +72,6 @@ export class Srp130AwsInfraStack extends Stack {
       value: githubActionCodebuildRole.roleArn,
       description: 'ARN of the GitHub Actions CodeBuild Role'
     });
-
-    // GitHub Actions role for CodeBuild
-    const github_actions_role = new iam.Role(this, 'GithubActionCodebuildRole', {
-      assumedBy: new iam.WebIdentityPrincipal('arn:aws:iam::' + this.account + ':oidc-provider/token.actions.githubusercontent.com', {
-        'StringEquals': {
-          'token.actions.githubusercontent.com:aud': 'sts.amazonaws.com',
-          'token.actions.githubusercontent.com:sub': 'repo:UNSW-Sunswift/EMBD-High-Dev-Infra:ref:refs/heads/main'
-        }
-      }),
-    });
-
 
     const sdp_s3 = new s3.Bucket(this,'embd-high-level-infra', {
       bucketName: `sr8-embd-dev-env-${this.region}`,
@@ -220,20 +208,10 @@ export class Srp130AwsInfraStack extends Stack {
       resources: ['*'],
    }));
 
-   // Output logs
    new CfnOutput(this, 'ConnectionARN', {
       value: github_connector.attrConnectionArn,
       description: 'CodeStar Connection ARN for SRP8-130'
     })
-
-    github_actions_role.addToPolicy(new iam.PolicyStatement({
-      effect: iam.Effect.ALLOW,
-      actions: [
-        'codebuild:StartBuild',
-        'codebuild:BatchGetBuilds'
-      ],
-      resources: [dev_env_codebuild.projectArn]
-    }));
 
 
   }

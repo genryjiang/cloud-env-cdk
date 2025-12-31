@@ -10,16 +10,16 @@ env:
 phases:
   pre_build:
     commands:
-      - set -euo pipefail
       - mkdir -p artifacts
       - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $ECR_URL
+      - GIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c1-7)
       - aws s3 cp "s3://${S3_BUCKET}/${QNX_SDP}" "artifacts/qnx800.tar.gz"
       - aws s3 cp "s3://${S3_BUCKET}/${RTI}" "artifacts/rti_connext.tar"
   build:
     commands:
       # Build for ARM64 (macOS Apple Silicon)
-      - docker build --platform linux/arm64 --build-arg USER_NAME=developer --build-arg GROUP_NAME=developer --build-arg USER_ID=1000 --build-arg GROUP_ID=1000 --build-arg QNX_SDP_VERSION=8.0 -t $IMAGE_REPO_NAME:macos-arm64-$GIT_HASH .
-      - docker build --platform linux/arm64 --build-arg USER_NAME=developer --build-arg GROUP_NAME=developer --build-arg USER_ID=1000 --build-arg GROUP_ID=1000 --build-arg QNX_SDP_VERSION=8.0 -t $IMAGE_REPO_NAME:macos-arm64-latest .
+      # - docker build --platform linux/arm64 --build-arg USER_NAME=developer --build-arg GROUP_NAME=developer --build-arg USER_ID=1000 --build-arg GROUP_ID=1000 --build-arg QNX_SDP_VERSION=8.0 -t $IMAGE_REPO_NAME:macos-arm64-$GIT_HASH .
+      # - docker build --platform linux/arm64 --build-arg USER_NAME=developer --build-arg GROUP_NAME=developer --build-arg USER_ID=1000 --build-arg GROUP_ID=1000 --build-arg QNX_SDP_VERSION=8.0 -t $IMAGE_REPO_NAME:macos-arm64-latest .
 
       # Build for AMD64 (Windows/Intel)
       - docker build --platform linux/amd64 --build-arg USER_NAME=developer --build-arg GROUP_NAME=developer --build-arg USER_ID=1000 --build-arg GROUP_ID=1000 --build-arg QNX_SDP_VERSION=8.0 -t $IMAGE_REPO_NAME:windows-amd64-$GIT_HASH .

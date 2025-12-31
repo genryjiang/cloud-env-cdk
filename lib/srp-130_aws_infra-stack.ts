@@ -135,6 +135,8 @@ export class Srp130AwsInfraStack extends Stack {
             'codepipeline:GetPipelineState',
             'codebuild:BatchGetBuilds',
             'codebuild:ListBuildsForProject',
+            'logs:GetLogEvents',
+            'logs:FilterLogEvents'
           ],
           resources: [
             `arn:aws:codebuild:${this.region}:${this.account}:project/embd-dev-env`,

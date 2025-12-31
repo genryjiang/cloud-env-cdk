@@ -78,6 +78,12 @@ export class Srp130AwsInfraStack extends Stack {
           'codepipeline:ListPipelineExecutions',
           'codepipeline:GetPipelineExecution',
           'codepipeline:ListActionExecutions',
+          'codepipeline:GetPipelineState',
+          'codepipeline:GetPipeline',
+          'codepipeline:ListPipelines',
+          'codepipeline:ListTagsForResource',
+          'codepipeline:TagResource',
+          'codepipeline:UntagResource'
         ],
         resources: ['*'],
     }));
@@ -132,6 +138,7 @@ export class Srp130AwsInfraStack extends Stack {
             'codepipeline:StartPipelineExecution',
             'codepipeline:GetPipelineExecution',
             'codepipeline:ListPipelineExecutions',
+            'codepipeline:ListActionExecutions',
             'codepipeline:GetPipelineState',
             'codebuild:BatchGetBuilds',
             'codebuild:ListBuildsForProject',

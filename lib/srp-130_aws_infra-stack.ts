@@ -31,19 +31,18 @@ export class Srp130AwsInfraStack extends Stack {
           effect: iam.Effect.ALLOW,
           actions: [
             'codebuild:StartBuild',
-            'codebuild:BatchGetBuilds'
-          ],
-          resources: [
-            `arn:aws:codebuild:${this.region}:${this.account}:project/embd-dev-env`
-          ]
-        }),
-        new iam.PolicyStatement({
-          effect: iam.Effect.ALLOW,
-          actions: [
+            'codebuild:BatchGetBuilds',
+            'codepipeline:StartPipelineExecution',
+            'codepipeline:ListPipelineExecutions',
+            'codepipeline:GetPipelineExecution',
+            'codepipeline:ListActionExecutions',
+            'logs:DescribeLogStreams',
             'logs:GetLogEvents'
           ],
           resources: [
-            `arn:aws:logs:${this.region}:${this.account}:log-group:/aws/codebuild/embd-dev-env:*`,
+            `arn:aws:codebuild:${this.region}:${this.account}:project/embd-dev-env`,
+            `arn:aws:codepipeline:${this.region}:${this.account}:pipeline/EMBD-High-Level-Infra-Pipeline`,
+            `arn:aws:logs:${this.region}:${this.account}:log-group:/aws/codebuild/embd-dev-env:*`
           ]
         })
       ]
@@ -181,6 +180,7 @@ export class Srp130AwsInfraStack extends Stack {
               branch: 'main',
               output: source_artifact,
               connectionArn: github_connector.attrConnectionArn,
+              triggerOnPush: false,
             }),
           ],
         },

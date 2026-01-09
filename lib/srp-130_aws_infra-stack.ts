@@ -62,7 +62,6 @@ export class Srp130AwsInfraStack extends Stack {
         },
       ],
     });
-
       const pipeline_role = new iam.Role(this, 'PipelineServiceRole', {
       assumedBy: new iam.ServicePrincipal('codepipeline.amazonaws.com'),
     });

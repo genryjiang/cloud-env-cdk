@@ -1,0 +1,27 @@
+{
+  "name": "QNX Embedded Development",
+  "image": "${AWS_ACCOUNT_ID}.dkr.ecr.ap-southeast-2.amazonaws.com/embd_dev_ecr:latest",
+  
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-vscode.cpptools",
+        "ms-vscode.cmake-tools",
+        "twxs.cmake"
+      ],
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "bash"
+      }
+    }
+  },
+  
+  "mounts": [
+    "source=/home/ec2-user/workspace,target=/workspace,type=bind"
+  ],
+  
+  "workspaceFolder": "/workspace",
+  
+  "postCreateCommand": "echo 'Dev Container Ready!'",
+  
+  "remoteUser": "root"
+}

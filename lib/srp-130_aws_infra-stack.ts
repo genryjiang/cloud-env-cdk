@@ -91,7 +91,7 @@ export class Srp130AwsInfraStack extends Stack {
     // Grant S3 permissions to pipeline role
     artifacts_bucket.grantReadWrite(pipeline_role);
     const source_artifact = new codepipeline.Artifact('SourceArtifact');
-    // Build spec for docker container
+    // NOTE: QNX800 only runs on x86_64 (AMD64), build only for that
     const dev_env_codebuild = new codebuild.Project(this, 'SR8-EMBD-Dev', {
       buildSpec: codebuild.BuildSpec.fromSourceFilename('docker/buildspec.yml'),
       source: codebuild.Source.gitHub({

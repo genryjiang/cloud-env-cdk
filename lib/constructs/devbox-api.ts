@@ -28,9 +28,10 @@ export class DevboxApi extends Construct {
     devbox.addMethod('POST', integration); // Provision
     devbox.addMethod('GET', integration);  // Status
 
-    new CfnOutput(this, 'ApiUrl', {
+    new CfnOutput(this, 'DevboxApiUrl', {
       value: this.api.url,
       description: 'Devbox API endpoint',
+      exportName: 'DevboxApiUrl',
     });
   }
 }

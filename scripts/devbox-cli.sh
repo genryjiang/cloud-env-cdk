@@ -4,18 +4,28 @@
 set -e
 
 REGION="${AWS_REGION:-ap-southeast-2}"
-STACK_NAME="MjolnirCloudPlatformStack"
+STACK_NAME="AsgardCloudEnvStack"
+
+get_user_id() {
+  local arn=""
+  arn=$(aws sts get-caller-identity --query 'Arn' --output text 2>/dev/null) || arn=""
+  if [ -n "$arn" ] && [ "$arn" != "None" ]; then
+    echo "$arn" | awk -F'[:/]' '{print $NF}'
+  else
+    echo "$USER"
+  fi
+}
 
 get_api_url() {
   aws cloudformation describe-stacks \
     --stack-name "$STACK_NAME" \
-    --query 'Stacks[0].Outputs[?OutputKey==`DevboxApiApiUrl`].OutputValue' \
+    --query 'Stacks[0].Outputs[?contains(OutputKey,`DevboxApiUrl`)].OutputValue | [0]' \
     --output text \
     --region "$REGION"
 }
 
 provision() {
-  local user_id="${1:-$USER}"
+  local user_id="${1:-$(get_user_id)}"
   local api_url=$(get_api_url)
   
   echo "Provisioning devbox for $user_id..."
@@ -40,7 +50,7 @@ provision() {
 }
 
 status() {
-  local user_id="${1:-$USER}"
+  local user_id="${1:-$(get_user_id)}"
   local api_url=$(get_api_url)
 
   curl -s -X POST "${api_url}devbox" \
@@ -49,7 +59,7 @@ status() {
 }
 
 stop() {
-  local user_id="${1:-$USER}"
+  local user_id="${1:-$(get_user_id)}"
   local api_url=$(get_api_url)
   
   echo "Stopping devbox for $user_id..."
@@ -59,7 +69,7 @@ stop() {
 }
 
 terminate() {
-  local user_id="${1:-$USER}"
+  local user_id="${1:-$(get_user_id)}"
   
   read -p "This will DELETE the devbox and all data. Continue? (yes/no): " confirm
   if [ "$confirm" != "yes" ]; then
@@ -74,8 +84,71 @@ terminate() {
     -d "{\"action\": \"terminate\", \"userId\": \"$user_id\"}" | jq .
 }
 
+logs() {
+  local user_id="${1:-$(get_user_id)}"
+  local api_url=$(get_api_url)
+
+  response=$(curl -s -X POST "${api_url}devbox" \
+    -H "Content-Type: application/json" \
+    -d "{\"action\": \"status\", \"userId\": \"$user_id\"}")
+
+  instance_id=$(echo "$response" | jq -r '.instanceId')
+
+  if [ "$instance_id" = "null" ]; then
+    echo "No devbox found for $user_id"
+    exit 1
+  fi
+
+  echo "Fetching system logs for $instance_id..."
+  echo ""
+  aws ec2 get-console-output --instance-id "$instance_id" --region "$REGION" --output text | tail -100
+}
+
+check() {
+  local user_id="${1:-$(get_user_id)}"
+  local api_url=$(get_api_url)
+
+  response=$(curl -s -X POST "${api_url}devbox" \
+    -H "Content-Type: application/json" \
+    -d "{\"action\": \"status\", \"userId\": \"$user_id\"}")
+
+  instance_id=$(echo "$response" | jq -r '.instanceId')
+  status=$(echo "$response" | jq -r '.status')
+
+  if [ "$instance_id" = "null" ]; then
+    echo "No devbox found for $user_id"
+    exit 1
+  fi
+
+  if [ "$status" != "running" ]; then
+    echo "Devbox is $status, not running. Cannot check."
+    exit 1
+  fi
+
+  echo "Checking Docker and ECR image on $instance_id..."
+  echo ""
+
+  cmd_id=$(aws ssm send-command \
+    --instance-ids "$instance_id" \
+    --document-name "AWS-RunShellScript" \
+    --parameters 'commands=["echo ===DOCKER STATUS===","sudo systemctl status docker --no-pager","echo","echo ===DOCKER VERSION===","docker --version","echo","echo ===DOCKER IMAGES===","docker images","echo","echo ===WORKSPACE===","ls -la /home/ec2-user/workspace"]' \
+    --region "$REGION" \
+    --output text \
+    --query 'Command.CommandId')
+
+  echo "Waiting for command to complete..."
+  sleep 3
+
+  aws ssm get-command-invocation \
+    --command-id "$cmd_id" \
+    --instance-id "$instance_id" \
+    --region "$REGION" \
+    --query 'StandardOutputContent' \
+    --output text
+}
+
 connect() {
-  local user_id="${1:-$USER}"
+  local user_id="${1:-$(get_user_id)}"
   local api_url=$(get_api_url)
 
   echo "Looking up devbox for $user_id..."
@@ -105,12 +178,78 @@ connect() {
   aws ssm start-session --target "$instance_id" --region "$REGION"
 }
 
+# AI GEN (and used for testing; final will be different)
+#   Final Ver: CLI that lives in devbox, call to push
+
+get_artifacts_bucket() {
+  aws cloudformation describe-stacks \
+    --stack-name "$STACK_NAME" \
+    --query 'Stacks[0].Outputs[?OutputKey==`ArtifactsBucket`].OutputValue' \
+    --output text \
+    --region "$REGION"
+}
+
+upload() {
+  local file="$1"
+  local user_id="${2:-$(get_user_id)}"
+  
+  if [ -z "$file" ]; then
+    echo "Usage: $0 upload <file> [user_id]"
+    exit 1
+  fi
+  
+  if [ ! -f "$file" ]; then
+    echo "File not found: $file"
+    exit 1
+  fi
+  
+  local bucket=$(get_artifacts_bucket)
+  local filename=$(basename "$file")
+  
+  echo "Uploading $file to s3://$bucket/$user_id/$filename..."
+  aws s3 cp "$file" "s3://$bucket/$user_id/$filename" --region "$REGION"
+  echo "✅ Uploaded to s3://$bucket/$user_id/$filename"
+}
+
+download() {
+  local user_id="${1:-$(get_user_id)}"
+  local bucket=$(get_artifacts_bucket)
+  
+  echo "Artifacts for $user_id:"
+  aws s3 ls "s3://$bucket/$user_id/" --region "$REGION" --human-readable
+  
+  if [ -n "$2" ]; then
+    local file="$2"
+    echo ""
+    echo "Downloading $file..."
+    aws s3 cp "s3://$bucket/$user_id/$file" "./$file" --region "$REGION"
+    echo "✅ Downloaded to ./$file"
+  else
+    echo ""
+    echo "To download: $0 download [user_id] <filename>"
+  fi
+}
+
+list_artifacts() {
+  local user_id="${1:-$(get_user_id)}"
+  local bucket=$(get_artifacts_bucket)
+  
+  echo "Artifacts for $user_id:"
+  aws s3 ls "s3://$bucket/$user_id/" --region "$REGION" --human-readable --recursive
+}
+
 case "${1:-help}" in
   provision)
     provision "$2"
     ;;
   status)
     status "$2"
+    ;;
+  logs)
+    logs "$2"
+    ;;
+  check)
+    check "$2"
     ;;
   stop)
     stop "$2"
@@ -121,6 +260,15 @@ case "${1:-help}" in
   connect)
     connect "$2"
     ;;
+  upload)
+    upload "$2" "$3"
+    ;;
+  download)
+    download "$2" "$3"
+    ;;
+  artifacts)
+    list_artifacts "$2"
+    ;;
   *)
     echo "Devbox CLI - Manage your cloud development environment"
     echo ""
@@ -129,10 +277,17 @@ case "${1:-help}" in
     echo "Commands:"
     echo "  provision [user]   - Create a new devbox"
     echo "  status [user]      - Check devbox status"
+    echo "  logs [user]        - View instance boot logs (check Docker setup)"
+    echo "  check [user]       - Check Docker status and ECR images on running instance"
     echo "  connect [user]     - Connect to devbox via SSM"
     echo "  stop [user]        - Stop devbox (preserves data)"
     echo "  terminate [user]   - Delete devbox (destroys data)"
     echo ""
-    echo "If user_id is not provided, uses \$USER ($USER)"
+    echo "Artifact Management:"
+    echo "  upload <file> [user]      - Upload build artifact to S3"
+    echo "  download [user] <file>    - Download artifact from S3"
+    echo "  artifacts [user]          - List all artifacts for user"
+    echo ""
+    echo "If user_id is not provided, uses STS caller ARN username (fallback: \$USER)"
     ;;
 esac

@@ -41,7 +41,7 @@ export class DevboxSharedResources extends Construct {
         iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonSSMManagedInstanceCore'),
       ],
     });
-    
+
     this.artifactsBucket.grantReadWrite(this.devboxRole);
     this.devboxRole.addToPolicy(new iam.PolicyStatement({
       actions: ['ecr:GetAuthorizationToken', 'ecr:BatchGetImage', 'ecr:GetDownloadUrlForLayer'],
@@ -59,6 +59,7 @@ export class DevboxSharedResources extends Construct {
         volume: ec2.BlockDeviceVolume.ebs(50, { encrypted: true }),
       }],
       userData: ec2.UserData.forLinux(),
+      requireImdsv2: true,
     });
 
     this.launchTemplate.userData?.addCommands(
@@ -70,22 +71,23 @@ export class DevboxSharedResources extends Construct {
       'systemctl start docker',
       'systemctl enable docker',
       'usermod -aG docker ec2-user',
-      '',
-      '# Install Docker Compose',
-      'curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose',
-      'chmod +x /usr/local/bin/docker-compose',
+      'usermod -aG docker ssm-user',
       '',
       '# Pre-pull Dev Container image from ECR',
+      'sleep 10',
       'REGION=$(ec2-metadata --availability-zone | sed "s/[a-z]$//" | cut -d" " -f2)',
       'ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)',
-      'aws ecr get-login-password --region $REGION | docker login --username AWS --password-stdin $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com',
-      'docker pull $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/embd_dev_ecr:latest || true',
+      'ECR_REPO=$(aws ecr describe-repositories --region $REGION --query "repositories[?contains(repositoryName, \'embddevecr\')].repositoryName" --output text | head -1)',
+      'if [ -n "$ECR_REPO" ]; then',
+      '  aws ecr get-login-password --region $REGION | docker login --username AWS --password-stdin $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com',
+      '  docker pull $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/$ECR_REPO:linux-amd64-latest || true',
+      'fi',
       '',
       '# Setup workspace directory',
       'mkdir -p /home/ec2-user/workspace',
       'chown ec2-user:ec2-user /home/ec2-user/workspace',
       '',
-      '# Configure Git credential helper for GitHub',
+      '# Configure Git credential helper',
       'sudo -u ec2-user git config --global credential.helper store',
     );
   }

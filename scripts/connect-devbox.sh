@@ -3,14 +3,24 @@
 
 set -e
 
-USER_ID="${1:-$USER}"
+get_user_id() {
+  local arn=""
+  arn=$(aws sts get-caller-identity --query 'Arn' --output text 2>/dev/null) || arn=""
+  if [ -n "$arn" ] && [ "$arn" != "None" ]; then
+    echo "$arn" | awk -F'[:/]' '{print $NF}'
+  else
+    echo "$USER"
+  fi
+}
+
+USER_ID="${1:-$(get_user_id)}"
 REGION="${AWS_REGION:-ap-southeast-2}"
 
 echo "🔍 Looking up devbox for user: $USER_ID"
 
 # Get instance ID from DynamoDB
 TABLE_NAME=$(aws cloudformation describe-stacks \
-  --stack-name MjolnirCloudPlatformStack \
+  --stack-name AsgardCloudEnvStack \
   --query 'Stacks[0].Outputs[?OutputKey==`UserTable`].OutputValue' \
   --output text \
   --region $REGION)

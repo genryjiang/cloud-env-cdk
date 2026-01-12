@@ -189,22 +189,35 @@ export class Srp130AwsInfraStack extends Stack {
       description: 'ARN of the GitHub Actions CodeBuild Role'
     });
 
+    const sourceAction = new codepipeline_actions.CodeStarConnectionsSourceAction({
+      actionName: 'Source',
+      owner: 'UNSW-Sunswift',
+      repo: 'EMBD-High-Dev-Infra',
+      branch: 'main',
+      output: source_artifact,
+      connectionArn: github_connector.attrConnectionArn,
+    });
+
     const dev_build_pipeline = new codepipeline.Pipeline(this, 'EMBD-High-Level-Infra-Pipeline', {
       pipelineName: 'EMBD-High-Level-Infra-Pipeline',
       role: pipeline_role,
+      pipelineType: codepipeline.PipelineType.V2,
+      triggers: [{
+        providerType: codepipeline.ProviderType.CODE_STAR_SOURCE_CONNECTION,
+        gitConfiguration: {
+          sourceAction: sourceAction,
+          pushFilter: [{
+            tagsExcludes: [],
+            tagsIncludes: [],
+            branchesIncludes: ['main'],
+            filePathsIncludes: ['docker/**'],
+          }],
+        },
+      }],
       stages: [
         {
           stageName: 'Source',
-          actions: [
-            new codepipeline_actions.CodeStarConnectionsSourceAction({
-              actionName: 'Source',
-              owner: 'UNSW-Sunswift',
-              repo: 'EMBD-High-Dev-Infra',
-              branch: 'main',
-              output: source_artifact,
-              connectionArn: github_connector.attrConnectionArn,
-            }),
-          ],
+          actions: [sourceAction],
         },
         {
           stageName: 'Build',

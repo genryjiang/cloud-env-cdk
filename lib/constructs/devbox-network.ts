@@ -28,6 +28,10 @@ export class DevboxNetwork extends Construct {
     this.vpc.addInterfaceEndpoint('EcrDocker', { service: ec2.InterfaceVpcEndpointAwsService.ECR_DOCKER });
     this.vpc.addGatewayEndpoint('S3', { service: ec2.GatewayVpcEndpointAwsService.S3 });
 
+    // DynamoDB and EC2 endpoints for Lambda provisioner
+    this.vpc.addGatewayEndpoint('DynamoDB', { service: ec2.GatewayVpcEndpointAwsService.DYNAMODB });
+    this.vpc.addInterfaceEndpoint('Ec2', { service: ec2.InterfaceVpcEndpointAwsService.EC2 });
+
     this.securityGroup = new ec2.SecurityGroup(this, 'Sg', {
       vpc: this.vpc,
       description: 'Devbox security group',

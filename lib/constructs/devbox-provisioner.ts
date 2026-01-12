@@ -28,7 +28,7 @@ export class DevboxProvisioner extends Construct {
       environment: {
         USER_TABLE: props.userTable.tableName,
         LAUNCH_TEMPLATE_ID: props.launchTemplate.launchTemplateId!,
-        SUBNET_IDS: props.vpc.privateSubnets.map(s => s.subnetId).join(','),
+        SUBNET_IDS: props.vpc.isolatedSubnets.map(s => s.subnetId).join(','),
       },
       logRetention: logs.RetentionDays.ONE_WEEK,
     });

@@ -11,9 +11,11 @@ This guide covers provisioning and connecting to a devbox. For deployment, see D
 ## Quick start (CLI)
 
 ```bash
-./scripts/devbox-cli.sh provision $USER
-./scripts/devbox-cli.sh connect $USER
+./scripts/devbox-cli.sh provision
+./scripts/devbox-cli.sh connect
 ```
+
+If you omit the userId argument, the scripts default to the caller ARN username (last segment of the ARN) from `aws sts get-caller-identity` (fallback: `$USER`). To override, pass a userId explicitly.
 
 If the CLI cannot find the API URL, check the stack name and output key in `scripts/devbox-cli.sh`. The devbox stack outputs `ApiUrl` from `AsgardCloudEnvStack`.
 
@@ -25,15 +27,17 @@ API_URL=$(aws cloudformation describe-stacks \
   --query 'Stacks[0].Outputs[?OutputKey==`ApiUrl`].OutputValue' \
   --output text)
 
+USER_ID=$(aws sts get-caller-identity --query 'Arn' --output text | awk -F'[:/]' '{print $NF}')
+
 curl -X POST "${API_URL}devbox" \
   -H "Content-Type: application/json" \
-  -d '{"action": "provision", "userId": "'"$USER"'"}'
+  -d '{"action": "provision", "userId": "'"$USER_ID"'"}'
 ```
 
 ## Connect via terminal
 
 ```bash
-./scripts/connect-devbox.sh $USER
+./scripts/connect-devbox.sh
 ```
 
 or, if you already know the instance ID:
@@ -47,13 +51,13 @@ aws ssm start-session --target i-xxxxxxxx --region ap-southeast-2
 1. Generate SSH config:
 
    ```bash
-   ./scripts/vscode-config.sh $USER >> ~/.ssh/config
+   ./scripts/vscode-config.sh >> ~/.ssh/config
    ```
 
 2. In VS Code:
    - Install the "Remote - SSH" extension
    - Run "Remote-SSH: Connect to Host"
-   - Select `devbox-$USER`
+   - Select `devbox-<userId>`
 
 ## Dev Containers
 

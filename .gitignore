@@ -10,3 +10,4 @@ cdk.out
 
 # Ignore log files in scripts/logs directory
 scripts/logs/
+*.log

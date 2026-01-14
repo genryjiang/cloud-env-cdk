@@ -14,7 +14,7 @@ get_user_id() {
 USER_ID="${1:-$(get_user_id)}"
 REGION="${AWS_REGION:-ap-southeast-2}"
 STACK_NAME="AsgardCloudEnvStack"
-SSH_USER="${SSH_USER:-ubuntu}"
+SSH_USER="${SSH_USER:-ec2-user}"
 
 TABLE_NAME=$(aws cloudformation describe-stacks \
   --stack-name "$STACK_NAME" \
@@ -44,6 +44,7 @@ Host devbox-$USER_ID
     ProxyCommand sh -c "aws ssm start-session --target %h --document-name AWS-StartSSHSession --parameters 'portNumber=%p' --region $REGION"
     StrictHostKeyChecking no
     UserKnownHostsFile /dev/null
+    ForwardAgent Yes
 
 Then in VS Code:
 1. Install "Remote - SSH" extension

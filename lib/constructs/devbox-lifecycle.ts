@@ -10,9 +10,13 @@ export class DevboxLifecycle extends Construct {
   constructor(scope: Construct, id: string) {
     super(scope, id);
 
+    const logGroup = new logs.LogGroup(this, 'CleanupLogGroup', {
+      retention: logs.RetentionDays.ONE_WEEK,
+    });
+
     const cleanupFunction = new lambda.Function(this, 'Cleanup', {
       runtime: lambda.Runtime.NODEJS_20_X,
-      handler: 'provision.handler',
+      handler: 'index.handler',
       code: lambda.Code.fromInline(`
         const { EC2Client, DescribeInstancesCommand, StopInstancesCommand, TerminateInstancesCommand } = require('@aws-sdk/client-ec2');
         const { CloudWatchClient, GetMetricStatisticsCommand } = require('@aws-sdk/client-cloudwatch');
@@ -59,7 +63,7 @@ export class DevboxLifecycle extends Construct {
         }
       `),
       timeout: Duration.minutes(5),
-      logRetention: logs.RetentionDays.ONE_WEEK,
+      logGroup,
     });
 
     cleanupFunction.addToRolePolicy(new iam.PolicyStatement({

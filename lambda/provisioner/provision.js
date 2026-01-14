@@ -1,4 +1,4 @@
-const { EC2Client, RunInstancesCommand, DescribeInstancesCommand, StopInstancesCommand, TerminateInstancesCommand } = require('@aws-sdk/client-ec2');
+const { EC2Client, RunInstancesCommand, DescribeInstancesCommand, StopInstancesCommand, TerminateInstancesCommand, StartInstancesCommand } = require('@aws-sdk/client-ec2');
 const { DynamoDBClient } = require('@aws-sdk/client-dynamodb');
 const { DynamoDBDocumentClient, PutCommand, GetCommand, DeleteCommand } = require('@aws-sdk/lib-dynamodb');
 
@@ -6,24 +6,34 @@ const ec2 = new EC2Client();
 const ddb = DynamoDBDocumentClient.from(new DynamoDBClient());
 
 exports.handler = async (event) => {
-  const body = event.body ? JSON.parse(event.body) : event.queryStringParameters || {};
-  const { action, userId } = body;
+  console.log('Event:', JSON.stringify(event, null, 2));
+  
+  try {
+    const body = event.body ? JSON.parse(event.body) : event.queryStringParameters || {};
+    const { action, userId } = body;
 
-  if (!userId) {
-    return { statusCode: 400, body: JSON.stringify({ error: 'userId required' }) };
-  }
+    if (!userId) {
+      return { statusCode: 400, body: JSON.stringify({ error: 'userId required' }) };
+    }
 
-  switch (action) {
-    case 'provision':
-      return await provisionDevbox(userId);
-    case 'status':
-      return await getDevboxStatus(userId);
-    case 'stop':
-      return await stopDevbox(userId);
-    case 'terminate':
-      return await terminateDevbox(userId);
-    default:
-      return { statusCode: 400, body: JSON.stringify({ error: 'Invalid action' }) };
+    switch (action) {
+      case 'provision':
+        return await provisionDevbox(userId);
+      case 'status':
+        return await getDevboxStatus(userId);
+      case 'stop':
+        return await stopDevbox(userId);
+      case 'terminate':
+        return await terminateDevbox(userId);
+      default:
+        return { statusCode: 400, body: JSON.stringify({ error: 'Invalid action' }) };
+    }
+  } catch (error) {
+    console.error('Error:', error);
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ error: error.message, stack: error.stack })
+    };
   }
 };
 
@@ -46,7 +56,7 @@ async function provisionDevbox(userId) {
       };
     } else if (status === 'stopped') {
       // Restart stopped instance
-      await ec2.send(new RunInstancesCommand({ InstanceIds: [existing.Item.instanceId] }));
+      await ec2.send(new StartInstancesCommand({ InstanceIds: [existing.Item.instanceId] }));
       return {
         statusCode: 200,
         body: JSON.stringify({ instanceId: existing.Item.instanceId, status: 'starting' }),
@@ -66,6 +76,8 @@ async function provisionDevbox(userId) {
         { Key: 'Name', Value: `devbox-${userId}` },
         { Key: 'User', Value: userId },
         { Key: 'ManagedBy', Value: 'devbox-provisioner' },
+        { Key: 'Purpose', Value: 'Devbox' },
+        { Key: 'Owner', Value: userId },
       ],
     }],
   }));

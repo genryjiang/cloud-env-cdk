@@ -38,7 +38,7 @@ export class DevboxSharedResources extends Construct {
     this.devboxRole = new iam.Role(this, 'DevboxRole', {
       assumedBy: new iam.ServicePrincipal('ec2.amazonaws.com'),
       managedPolicies: [
-        iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonSSMManagedInstanceCore'),
+        iam.ManagedPolicy.fromManagedPolicyArn(this, 'SSMPolicy', 'arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore'),
       ],
     });
 
@@ -55,7 +55,7 @@ export class DevboxSharedResources extends Construct {
 
     // Launch template
     this.launchTemplate = new ec2.LaunchTemplate(this, 'Template', {
-      launchTemplateName: 'DevboxTemplate-v6',
+      launchTemplateName: 'DevboxTemplate-v9-sso',
       instanceType: ec2.InstanceType.of(ec2.InstanceClass.T3, ec2.InstanceSize.MEDIUM),
       machineImage: ec2.MachineImage.latestAmazonLinux2023(),
       role: this.devboxRole,
@@ -70,21 +70,42 @@ export class DevboxSharedResources extends Construct {
 
     this.launchTemplate.userData?.addCommands(
       '#!/bin/bash',
+      'set -e',
       'exec > >(tee /var/log/user-data.log) 2>&1',
-      'yum install -y docker git jq ec2-instance-connect',
+      '',
+      '# Install packages',
+      'yum install -y docker git jq',
+      '',
+      '# Start and enable Docker',
       'systemctl start docker',
       'systemctl enable docker',
+      'until docker info >/dev/null 2>&1; do sleep 1; done',
+      '',
+      '# Add ec2-user to docker group (no sudo needed)',
       'usermod -aG docker ec2-user',
+      '',
+      '# Enable SSH daemon (required for VS Code Remote-SSH protocol)',
+      '# Note: No inbound port 22 needed - access via SSM tunnel only',
       'systemctl start sshd',
       'systemctl enable sshd',
+      '',
+      '# Get AWS metadata',
       'REGION=$(TOKEN=`curl -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600"` && curl -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.254/latest/meta-data/placement/region)',
       'ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)',
       'ECR_REPO=$(aws ecr describe-repositories --region $REGION --query "repositories[?contains(repositoryName, \'embddevecr\')].repositoryName" --output text | head -1)',
+      '',
+      '# Login to ECR and pull dev container image',
       'aws ecr get-login-password --region $REGION | docker login --username AWS --password-stdin $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com',
-      'docker pull $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/$ECR_REPO:linux-amd64-latest',
+      'docker pull $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/$ECR_REPO:linux-amd64-latest || echo "Warning: Failed to pull image"',
+      '',
+      '# Setup workspace',
       'mkdir -p /home/ec2-user/workspace',
       'chown ec2-user:ec2-user /home/ec2-user/workspace',
-      'sudo -u ec2-user git config --global credential.helper store',
+      '',
+      '# Git credentials: Use SSH agent forwarding or GitHub CLI device login',
+      '# Do NOT use "git config --global credential.helper store" (plaintext creds)',
+      '',
+      'echo "Devbox setup complete"',
     );
   }
 }

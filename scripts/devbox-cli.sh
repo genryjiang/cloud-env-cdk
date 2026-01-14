@@ -3,6 +3,38 @@
 
 set -e
 
+# Check for required dependencies
+check_dependencies() {
+  local missing=()
+  
+  if ! command -v jq &> /dev/null; then
+    missing+=("jq")
+  fi
+  
+  if ! command -v aws &> /dev/null; then
+    missing+=("aws-cli")
+  fi
+  
+  if [ ${#missing[@]} -ne 0 ]; then
+    echo "Error: Missing required dependencies: ${missing[*]}"
+    echo ""
+    echo "Installation instructions:"
+    if [[ " ${missing[*]} " =~ " jq " ]]; then
+      echo "  jq:"
+      echo "    macOS:  brew install jq"
+      echo "    Ubuntu: sudo apt-get install jq"
+    fi
+    if [[ " ${missing[*]} " =~ " aws-cli " ]]; then
+      echo "  aws-cli:"
+      echo "    macOS:  brew install awscli"
+      echo "    Ubuntu: sudo apt-get install awscli"
+    fi
+    exit 1
+  fi
+}
+
+check_dependencies
+
 REGION="${AWS_REGION:-ap-southeast-2}"
 STACK_NAME="AsgardCloudEnvStack"
 
@@ -231,7 +263,7 @@ find_ssh_pubkey() {
 ssh_connect() {
   local user_id="${1:-$(get_user_id)}"
   local api_url=$(get_api_url)
-  local ssh_user="${SSH_USER:-ubuntu}"
+  local ssh_user="${SSH_USER:-ec2-user}"
 
   echo "Looking up devbox for $user_id..."
 
@@ -268,17 +300,24 @@ ssh_connect() {
   fi
 
   echo "Found instance: $instance_id"
-  echo "Pushing SSH key for $ssh_user..."
-  aws ec2-instance-connect send-ssh-public-key \
-    --instance-id "$instance_id" \
-    --instance-os-user "$ssh_user" \
-    --ssh-public-key "file://$pubkey_path" \
+  echo "Adding SSH key via SSM (EC2 Instance Connect not available in private subnet)..."
+  
+  local pub_key=$(cat "$pubkey_path")
+  aws ssm send-command \
+    --instance-ids "$instance_id" \
+    --document-name "AWS-RunShellScript" \
+    --parameters "commands=[\"mkdir -p /home/$ssh_user/.ssh\",\"echo '$pub_key' >> /home/$ssh_user/.ssh/authorized_keys\",\"chmod 700 /home/$ssh_user/.ssh\",\"chmod 600 /home/$ssh_user/.ssh/authorized_keys\",\"chown -R $ssh_user:$ssh_user /home/$ssh_user/.ssh\",\"sort -u /home/$ssh_user/.ssh/authorized_keys -o /home/$ssh_user/.ssh/authorized_keys\"]" \
     --region "$REGION" \
     --output text >/dev/null
+
+  echo "Waiting for key to be added..."
+  sleep 2
 
   echo "Connecting via SSH over SSM..."
   ssh -i "$private_key" \
     -o IdentitiesOnly=yes \
+    -o StrictHostKeyChecking=no \
+    -o UserKnownHostsFile=/dev/null \
     -o "ProxyCommand=aws ssm start-session --target %h --document-name AWS-StartSSHSession --parameters 'portNumber=%p' --region $REGION" \
     "$ssh_user@$instance_id"
 }
@@ -392,6 +431,7 @@ case "${1:-help}" in
     echo "  check [user]       - Check Docker status and ECR images on running instance"
     echo "  connect [user]     - Connect to devbox via SSM"
     echo "  ssh [user]         - SSH via SSM (pushes SSH key)"
+    echo "  ssh-config [user]  - Add devbox to ~/.ssh/config for VS Code"
     echo "  start [user]       - Start a stopped devbox"
     echo "  stop [user]        - Stop devbox (preserves data)"
     echo "  terminate [user]   - Delete devbox (destroys data)"

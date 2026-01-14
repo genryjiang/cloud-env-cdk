@@ -1,0 +1,355 @@
+=== Devbox Log Check ===
+User: henry-z5416365-pc
+Time: Wed 14 Jan 2026 21:35:08 AEDT
+
+Instance: i-0ef9334b5c822c330
+Status: running
+
+=== Console Output (last 100 lines) ===
+i-0ef9334b5c822c330		2026-01-14T10:35:11+00:00
+
+=== Docker Images ===
+REPOSITORY   TAG       IMAGE ID   CREATED   SIZE
+
+
+=== Cloud-Init Output Log ===
+
+Complete!
+Created symlink /etc/systemd/system/multi-user.target.wants/docker.service → /usr/lib/systemd/system/docker.service.
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100    56  100    56    0     0   8162      0 --:--:-- --:--:-- --:--:--  9333
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100    14  100    14    0     0   5251      0 --:--:-- --:--:-- --:--:--  7000
+WARNING! Your password will be stored unencrypted in /root/.docker/config.json.
+Configure a credential helper to remove this warning. See
+https://docs.docker.com/engine/reference/commandline/login/#credentials-store
+
+Login Succeeded
+linux-amd64-latest: Pulling from srp130awsinfrastack-embddevecr271e0e81-u0ngsbnmb3rj
+63e5bc7682b8: Pulling fs layer
+d47d0544306e: Pulling fs layer
+697f1a830737: Pulling fs layer
+3da38221c853: Pulling fs layer
+bd2e9e0394ae: Pulling fs layer
+31e8947d94fc: Pulling fs layer
+fa12b85ba3ce: Pulling fs layer
+8dbf4d55d5d2: Pulling fs layer
+e0abce82fbca: Pulling fs layer
+62dfc0570570: Pulling fs layer
+4f7c4d751d3c: Pulling fs layer
+c8fd30b4bdff: Pulling fs layer
+64c04db14639: Pulling fs layer
+dab47beb0349: Pulling fs layer
+3f0e27e4499e: Pulling fs layer
+00af74c53c6e: Pulling fs layer
+0b4a351249a6: Pulling fs layer
+2b4a99c1b8c6: Pulling fs layer
+65e35b968042: Pulling fs layer
+3da38221c853: Waiting
+c8fd30b4bdff: Waiting
+64c04db14639: Waiting
+dab47beb0349: Waiting
+3f0e27e4499e: Waiting
+00af74c53c6e: Waiting
+0b4a351249a6: Waiting
+2b4a99c1b8c6: Waiting
+65e35b968042: Waiting
+bd2e9e0394ae: Waiting
+31e8947d94fc: Waiting
+fa12b85ba3ce: Waiting
+8dbf4d55d5d2: Waiting
+e0abce82fbca: Waiting
+62dfc0570570: Waiting
+4f7c4d751d3c: Waiting
+697f1a830737: Download complete
+63e5bc7682b8: Verifying Checksum
+63e5bc7682b8: Download complete
+bd2e9e0394ae: Verifying Checksum
+bd2e9e0394ae: Download complete
+3da38221c853: Verifying Checksum
+3da38221c853: Download complete
+d47d0544306e: Verifying Checksum
+d47d0544306e: Download complete
+fa12b85ba3ce: Verifying Checksum
+fa12b85ba3ce: Download complete
+e0abce82fbca: Verifying Checksum
+e0abce82fbca: Download complete
+62dfc0570570: Download complete
+4f7c4d751d3c: Verifying Checksum
+4f7c4d751d3c: Download complete
+c8fd30b4bdff: Verifying Checksum
+c8fd30b4bdff: Download complete
+8dbf4d55d5d2: Verifying Checksum
+8dbf4d55d5d2: Download complete
+64c04db14639: Verifying Checksum
+64c04db14639: Download complete
+31e8947d94fc: Verifying Checksum
+31e8947d94fc: Download complete
+63e5bc7682b8: Pull complete
+d47d0544306e: Pull complete
+697f1a830737: Pull complete
+3da38221c853: Pull complete
+3f0e27e4499e: Verifying Checksum
+3f0e27e4499e: Download complete
+0b4a351249a6: Verifying Checksum
+0b4a351249a6: Download complete
+bd2e9e0394ae: Pull complete
+2b4a99c1b8c6: Verifying Checksum
+2b4a99c1b8c6: Download complete
+65e35b968042: Verifying Checksum
+65e35b968042: Download complete
+dab47beb0349: Verifying Checksum
+dab47beb0349: Download complete
+31e8947d94fc: Pull complete
+fa12b85ba3ce: Pull complete
+8dbf4d55d5d2: Pull complete
+e0abce82fbca: Pull complete
+62dfc0570570: Pull complete
+4f7c4d751d3c: Pull complete
+c8fd30b4bdff: Pull complete
+64c04db14639: Pull complete
+00af74c53c6e: Verifying Checksum
+00af74c53c6e: Download complete
+dab47beb0349: Pull complete
+
+
+=== User Data Log ===
+Amazon Linux 2023 repository                     64 MB/s |  52 MB     00:00    
+Amazon Linux 2023 Kernel Livepatch repository   229 kB/s |  30 kB     00:00    
+Package jq-1.7.1-51.amzn2023.x86_64 is already installed.
+Package ec2-instance-connect-1.1-19.amzn2023.noarch is already installed.
+Dependencies resolved.
+================================================================================
+ Package                 Arch    Version                     Repository    Size
+================================================================================
+Installing:
+ docker                  x86_64  25.0.14-1.amzn2023.0.1      amazonlinux   46 M
+ git                     x86_64  2.50.1-1.amzn2023.0.1       amazonlinux   53 k
+Installing dependencies:
+ container-selinux       noarch  4:2.242.0-1.amzn2023        amazonlinux   58 k
+ containerd              x86_64  2.1.5-1.amzn2023.0.3        amazonlinux   23 M
+ git-core                x86_64  2.50.1-1.amzn2023.0.1       amazonlinux  4.9 M
+ git-core-doc            noarch  2.50.1-1.amzn2023.0.1       amazonlinux  2.8 M
+ iptables-libs           x86_64  1.8.8-3.amzn2023.0.2        amazonlinux  401 k
+ iptables-nft            x86_64  1.8.8-3.amzn2023.0.2        amazonlinux  183 k
+ libcgroup               x86_64  3.0-1.amzn2023.0.1          amazonlinux   75 k
+ libnetfilter_conntrack  x86_64  1.0.8-2.amzn2023.0.2        amazonlinux   58 k
+ libnfnetlink            x86_64  1.0.1-19.amzn2023.0.2       amazonlinux   30 k
+ libnftnl                x86_64  1.2.2-2.amzn2023.0.2        amazonlinux   84 k
+ perl-Error              noarch  1:0.17029-5.amzn2023.0.2    amazonlinux   41 k
+ perl-File-Find          noarch  1.37-477.amzn2023.0.7       amazonlinux   25 k
+ perl-Git                noarch  2.50.1-1.amzn2023.0.1       amazonlinux   41 k
+ perl-TermReadKey        x86_64  2.38-9.amzn2023.0.2         amazonlinux   36 k
+ perl-lib                x86_64  0.65-477.amzn2023.0.7       amazonlinux   15 k
+ pigz                    x86_64  2.5-1.amzn2023.0.3          amazonlinux   83 k
+ runc                    x86_64  1.3.4-1.amzn2023.0.1        amazonlinux  3.9 M
+
+Transaction Summary
+================================================================================
+Install  19 Packages
+
+Total download size: 82 M
+Installed size: 322 M
+Downloading Packages:
+(1/19): container-selinux-2.242.0-1.amzn2023.no 1.4 MB/s |  58 kB     00:00    
+(2/19): git-2.50.1-1.amzn2023.0.1.x86_64.rpm    2.7 MB/s |  53 kB     00:00    
+(3/19): git-core-2.50.1-1.amzn2023.0.1.x86_64.r  62 MB/s | 4.9 MB     00:00    
+(4/19): git-core-doc-2.50.1-1.amzn2023.0.1.noar  62 MB/s | 2.8 MB     00:00    
+(5/19): iptables-libs-1.8.8-3.amzn2023.0.2.x86_  17 MB/s | 401 kB     00:00    
+(6/19): iptables-nft-1.8.8-3.amzn2023.0.2.x86_6 8.6 MB/s | 183 kB     00:00    
+(7/19): containerd-2.1.5-1.amzn2023.0.3.x86_64.  64 MB/s |  23 MB     00:00    
+(8/19): libcgroup-3.0-1.amzn2023.0.1.x86_64.rpm 612 kB/s |  75 kB     00:00    
+(9/19): libnetfilter_conntrack-1.0.8-2.amzn2023 1.7 MB/s |  58 kB     00:00    
+(10/19): libnfnetlink-1.0.1-19.amzn2023.0.2.x86 771 kB/s |  30 kB     00:00    
+(11/19): libnftnl-1.2.2-2.amzn2023.0.2.x86_64.r 2.9 MB/s |  84 kB     00:00    
+(12/19): perl-Error-0.17029-5.amzn2023.0.2.noar 1.8 MB/s |  41 kB     00:00    
+(13/19): perl-File-Find-1.37-477.amzn2023.0.7.n 901 kB/s |  25 kB     00:00    
+(14/19): perl-Git-2.50.1-1.amzn2023.0.1.noarch. 1.5 MB/s |  41 kB     00:00    
+(15/19): perl-TermReadKey-2.38-9.amzn2023.0.2.x 1.4 MB/s |  36 kB     00:00    
+(16/19): perl-lib-0.65-477.amzn2023.0.7.x86_64. 467 kB/s |  15 kB     00:00    
+(17/19): docker-25.0.14-1.amzn2023.0.1.x86_64.r  66 MB/s |  46 MB     00:00    
+(18/19): pigz-2.5-1.amzn2023.0.3.x86_64.rpm     391 kB/s |  83 kB     00:00    
+(19/19): runc-1.3.4-1.amzn2023.0.1.x86_64.rpm    17 MB/s | 3.9 MB     00:00    
+--------------------------------------------------------------------------------
+Total                                           106 MB/s |  82 MB     00:00     
+Running transaction check
+Transaction check succeeded.
+Running transaction test
+Transaction test succeeded.
+Running transaction
+  Preparing        :                                                        1/1 
+  Installing       : runc-1.3.4-1.amzn2023.0.1.x86_64                      1/19 
+  Installing       : git-core-2.50.1-1.amzn2023.0.1.x86_64                 2/19 
+  Installing       : git-core-doc-2.50.1-1.amzn2023.0.1.noarch             3/19 
+  Installing       : containerd-2.1.5-1.amzn2023.0.3.x86_64                4/19 
+  Running scriptlet: containerd-2.1.5-1.amzn2023.0.3.x86_64                4/19 
+  Installing       : pigz-2.5-1.amzn2023.0.3.x86_64                        5/19 
+  Installing       : perl-lib-0.65-477.amzn2023.0.7.x86_64                 6/19 
+  Installing       : perl-TermReadKey-2.38-9.amzn2023.0.2.x86_64           7/19 
+  Installing       : perl-File-Find-1.37-477.amzn2023.0.7.noarch           8/19 
+  Installing       : perl-Error-1:0.17029-5.amzn2023.0.2.noarch            9/19 
+  Installing       : perl-Git-2.50.1-1.amzn2023.0.1.noarch                10/19 
+  Installing       : git-2.50.1-1.amzn2023.0.1.x86_64                     11/19 
+  Installing       : libnftnl-1.2.2-2.amzn2023.0.2.x86_64                 12/19 
+  Installing       : libnfnetlink-1.0.1-19.amzn2023.0.2.x86_64            13/19 
+  Installing       : libnetfilter_conntrack-1.0.8-2.amzn2023.0.2.x86_64   14/19 
+  Installing       : iptables-libs-1.8.8-3.amzn2023.0.2.x86_64            15/19 
+  Installing       : iptables-nft-1.8.8-3.amzn2023.0.2.x86_64             16/19 
+  Running scriptlet: iptables-nft-1.8.8-3.amzn2023.0.2.x86_64             16/19 
+  Installing       : libcgroup-3.0-1.amzn2023.0.1.x86_64                  17/19 
+  Running scriptlet: container-selinux-4:2.242.0-1.amzn2023.noarch        18/19 
+  Installing       : container-selinux-4:2.242.0-1.amzn2023.noarch        18/19 
+  Running scriptlet: container-selinux-4:2.242.0-1.amzn2023.noarch        18/19 
+  Running scriptlet: docker-25.0.14-1.amzn2023.0.1.x86_64                 19/19 
+  Installing       : docker-25.0.14-1.amzn2023.0.1.x86_64                 19/19 
+  Running scriptlet: docker-25.0.14-1.amzn2023.0.1.x86_64                 19/19 
+Created symlink /etc/systemd/system/sockets.target.wants/docker.socket → /usr/lib/systemd/system/docker.socket.
+
+  Running scriptlet: container-selinux-4:2.242.0-1.amzn2023.noarch        19/19 
+  Running scriptlet: docker-25.0.14-1.amzn2023.0.1.x86_64                 19/19 
+  Verifying        : container-selinux-4:2.242.0-1.amzn2023.noarch         1/19 
+  Verifying        : containerd-2.1.5-1.amzn2023.0.3.x86_64                2/19 
+  Verifying        : docker-25.0.14-1.amzn2023.0.1.x86_64                  3/19 
+  Verifying        : git-2.50.1-1.amzn2023.0.1.x86_64                      4/19 
+  Verifying        : git-core-2.50.1-1.amzn2023.0.1.x86_64                 5/19 
+  Verifying        : git-core-doc-2.50.1-1.amzn2023.0.1.noarch             6/19 
+  Verifying        : iptables-libs-1.8.8-3.amzn2023.0.2.x86_64             7/19 
+  Verifying        : iptables-nft-1.8.8-3.amzn2023.0.2.x86_64              8/19 
+  Verifying        : libcgroup-3.0-1.amzn2023.0.1.x86_64                   9/19 
+  Verifying        : libnetfilter_conntrack-1.0.8-2.amzn2023.0.2.x86_64   10/19 
+  Verifying        : libnfnetlink-1.0.1-19.amzn2023.0.2.x86_64            11/19 
+  Verifying        : libnftnl-1.2.2-2.amzn2023.0.2.x86_64                 12/19 
+  Verifying        : perl-Error-1:0.17029-5.amzn2023.0.2.noarch           13/19 
+  Verifying        : perl-File-Find-1.37-477.amzn2023.0.7.noarch          14/19 
+  Verifying        : perl-Git-2.50.1-1.amzn2023.0.1.noarch                15/19 
+  Verifying        : perl-TermReadKey-2.38-9.amzn2023.0.2.x86_64          16/19 
+  Verifying        : perl-lib-0.65-477.amzn2023.0.7.x86_64                17/19 
+  Verifying        : pigz-2.5-1.amzn2023.0.3.x86_64                       18/19 
+  Verifying        : runc-1.3.4-1.amzn2023.0.1.x86_64                     19/19 
+
+Installed:
+  container-selinux-4:2.242.0-1.amzn2023.noarch                                 
+  containerd-2.1.5-1.amzn2023.0.3.x86_64                                        
+  docker-25.0.14-1.amzn2023.0.1.x86_64                                          
+  git-2.50.1-1.amzn2023.0.1.x86_64                                              
+  git-core-2.50.1-1.amzn2023.0.1.x86_64                                         
+  git-core-doc-2.50.1-1.amzn2023.0.1.noarch                                     
+  iptables-libs-1.8.8-3.amzn2023.0.2.x86_64                                     
+  iptables-nft-1.8.8-3.amzn2023.0.2.x86_64                                      
+  libcgroup-3.0-1.amzn2023.0.1.x86_64                                           
+  libnetfilter_conntrack-1.0.8-2.amzn2023.0.2.x86_64                            
+  libnfnetlink-1.0.1-19.amzn2023.0.2.x86_64                                     
+  libnftnl-1.2.2-2.amzn2023.0.2.x86_64                                          
+  perl-Error-1:0.17029-5.amzn2023.0.2.noarch                                    
+  perl-File-Find-1.37-477.amzn2023.0.7.noarch                                   
+  perl-Git-2.50.1-1.amzn2023.0.1.noarch                                         
+  perl-TermReadKey-2.38-9.amzn2023.0.2.x86_64                                   
+  perl-lib-0.65-477.amzn2023.0.7.x86_64                                         
+  pigz-2.5-1.amzn2023.0.3.x86_64                                                
+  runc-1.3.4-1.amzn2023.0.1.x86_64                                              
+
+Complete!
+Created symlink /etc/systemd/system/multi-user.target.wants/docker.service → /usr/lib/systemd/system/docker.service.
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100    56  100    56    0     0   8162      0 --:--:-- --:--:-- --:--:--  9333
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100    14  100    14    0     0   5251      0 --:--:-- --:--:-- --:--:--  7000
+WARNING! Your password will be stored unencrypted in /root/.docker/config.json.
+Configure a credential helper to remove this warning. See
+https://docs.docker.com/engine/reference/commandline/login/#credentials-store
+
+Login Succeeded
+linux-amd64-latest: Pulling from srp130awsinfrastack-embddevecr271e0e81-u0ngsbnmb3rj
+63e5bc7682b8: Pulling fs layer
+d47d0544306e: Pulling fs layer
+697f1a830737: Pulling fs layer
+3da38221c853: Pulling fs layer
+bd2e9e0394ae: Pulling fs layer
+31e8947d94fc: Pulling fs layer
+fa12b85ba3ce: Pulling fs layer
+8dbf4d55d5d2: Pulling fs layer
+e0abce82fbca: Pulling fs layer
+62dfc0570570: Pulling fs layer
+4f7c4d751d3c: Pulling fs layer
+c8fd30b4bdff: Pulling fs layer
+64c04db14639: Pulling fs layer
+dab47beb0349: Pulling fs layer
+3f0e27e4499e: Pulling fs layer
+00af74c53c6e: Pulling fs layer
+0b4a351249a6: Pulling fs layer
+2b4a99c1b8c6: Pulling fs layer
+65e35b968042: Pulling fs layer
+3da38221c853: Waiting
+c8fd30b4bdff: Waiting
+64c04db14639: Waiting
+dab47beb0349: Waiting
+3f0e27e4499e: Waiting
+00af74c53c6e: Waiting
+0b4a351249a6: Waiting
+2b4a99c1b8c6: Waiting
+65e35b968042: Waiting
+bd2e9e0394ae: Waiting
+31e8947d94fc: Waiting
+fa12b85ba3ce: Waiting
+8dbf4d55d5d2: Waiting
+e0abce82fbca: Waiting
+62dfc0570570: Waiting
+4f7c4d751d3c: Waiting
+697f1a830737: Download complete
+63e5bc7682b8: Verifying Checksum
+63e5bc7682b8: Download complete
+bd2e9e0394ae: Verifying Checksum
+bd2e9e0394ae: Download complete
+3da38221c853: Verifying Checksum
+3da38221c853: Download complete
+d47d0544306e: Verifying Checksum
+d47d0544306e: Download complete
+fa12b85ba3ce: Verifying Checksum
+fa12b85ba3ce: Download complete
+e0abce82fbca: Verifying Checksum
+e0abce82fbca: Download complete
+62dfc0570570: Download complete
+4f7c4d751d3c: Verifying Checksum
+4f7c4d751d3c: Download complete
+c8fd30b4bdff: Verifying Checksum
+c8fd30b4bdff: Download complete
+8dbf4d55d5d2: Verifying Checksum
+8dbf4d55d5d2: Download complete
+64c04db14639: Verifying Checksum
+64c04db14639: Download complete
+31e8947d94fc: Verifying Checksum
+31e8947d94fc: Download complete
+63e5bc7682b8: Pull complete
+d47d0544306e: Pull complete
+697f1a830737: Pull complete
+3da38221c853: Pull complete
+3f0e27e4499e: Verifying Checksum
+3f0e27e4499e: Download complete
+0b4a351249a6: Verifying Checksum
+0b4a351249a6: Download complete
+bd2e9e0394ae: Pull complete
+2b4a99c1b8c6: Verifying Checksum
+2b4a99c1b8c6: Download complete
+65e35b968042: Verifying Checksum
+65e35b968042: Download complete
+dab47beb0349: Verifying Checksum
+dab47beb0349: Download complete
+31e8947d94fc: Pull complete
+fa12b85ba3ce: Pull complete
+8dbf4d55d5d2: Pull complete
+e0abce82fbca: Pull complete
+62dfc0570570: Pull complete
+4f7c4d751d3c: Pull complete
+c8fd30b4bdff: Pull complete
+64c04db14639: Pull complete
+00af74c53c6e: Verifying Checksum
+00af74c53c6e: Download complete
+dab47beb0349: Pull complete
+3f0e27e4499e: Pull complete
+
+
+Log saved to: scripts/logs/devbox-henry-z5416365-pc-20260114-213508.log

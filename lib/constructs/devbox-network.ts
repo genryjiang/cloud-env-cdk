@@ -10,12 +10,19 @@ export class DevboxNetwork extends Construct {
 
     this.vpc = new ec2.Vpc(this, 'Vpc', {
       maxAzs: 2,
-      natGateways: 0,
-      subnetConfiguration: [{
-        name: 'Private',
-        subnetType: ec2.SubnetType.PRIVATE_ISOLATED,
-        cidrMask: 24,
-      }],
+      natGateways: 1,
+      subnetConfiguration: [
+        {
+          name: 'Public',
+          subnetType: ec2.SubnetType.PUBLIC,
+          cidrMask: 24,
+        },
+        {
+          name: 'Private',
+          subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS,
+          cidrMask: 24,
+        },
+      ],
     });
 
     // SSM endpoints for Session Manager

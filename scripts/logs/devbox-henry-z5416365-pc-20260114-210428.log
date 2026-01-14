@@ -1,0 +1,221 @@
+=== Devbox Log Check ===
+User: henry-z5416365-pc
+Time: Wed Jan 14 21:04:28 AEDT 2026
+
+Instance: i-0d741d48297689e05
+Status: running
+
+=== Console Output (last 100 lines) ===
+[   34.519640] cloud-init[1701]:   Installing       : git-core-doc-2.50.1-1.amzn2023.0.1.noarch             3/19
+[   34.525770] cloud-init[1701]:   Installing       : containerd-2.1.5-1.amzn2023.0.3.x86_64                4/19
+[   34.569205] cloud-init[1701]:   Running scriptlet: containerd-2.1.5-1.amzn2023.0.3.x86_64                4/19
+[   34.579273] cloud-init[1701]:   Installing       : pigz-2.5-1.amzn2023.0.3.x86_64                        5/19
+[   34.588932] cloud-init[1701]:   Installing       : perl-lib-0.65-477.amzn2023.0.7.x86_64                 6/19
+[   34.597596] cloud-init[1701]:   Installing       : perl-TermReadKey-2.38-9.amzn2023.0.2.x86_64           7/19
+[   34.613740] cloud-init[1701]:   Installing       : perl-File-Find-1.37-477.amzn2023.0.7.noarch           8/19
+[   34.624870] cloud-init[1701]:   Installing       : perl-Error-1:0.17029-5.amzn2023.0.2.noarch            9/19
+[   34.638349] cloud-init[1701]:   Installing       : perl-Git-2.50.1-1.amzn2023.0.1.noarch                10/19
+[   34.651911] cloud-init[1701]:   Installing       : git-2.50.1-1.amzn2023.0.1.x86_64                     11/19
+[   34.664910] cloud-init[1701]:   Installing       : libnftnl-1.2.2-2.amzn2023.0.2.x86_64                 12/19
+[   34.673678] cloud-init[1701]:   Installing       : libnfnetlink-1.0.1-19.amzn2023.0.2.x86_64            13/19
+[   34.819627] cloud-init[1701]:   Installing       : libnetfilter_conntrack-1.0.8-2.amzn2023.0.2.x86_64   14/19
+[   34.860799] cloud-init[1701]:   Installing       : iptables-libs-1.8.8-3.amzn2023.0.2.x86_64            15/19
+[   34.867861] cloud-init[1701]:   Installing       : iptables-nft-1.8.8-3.amzn2023.0.2.x86_64             16/19
+[   34.906298] cloud-init[1701]:   Running scriptlet: iptables-nft-1.8.8-3.amzn2023.0.2.x86_64             16/19
+[   34.913306] cloud-init[1701]:   Installing       : libcgroup-3.0-1.amzn2023.0.1.x86_64                  17/19
+[   34.941290] cloud-init[1701]:   Running scriptlet: container-selinux-4:2.242.0-1.amzn2023.noarch        18/19
+[   34.948253] cloud-init[1701]:   Installing       : container-selinux-4:2.242.0-1.amzn2023.noarch        18/19
+[   46.606826] SELinux:  Class user_namespace not defined in policy.
+[   46.607563] SELinux: the above unknown classes and permissions will be allowed
+[   46.608646] SELinux:  Converting 324 SID table entries...
+[   46.616180] SELinux:  policy capability network_peer_controls=1
+[   46.616892] SELinux:  policy capability open_perms=1
+[   46.617564] SELinux:  policy capability extended_socket_class=1
+[   46.618361] SELinux:  policy capability always_check_network=0
+[   46.619184] SELinux:  policy capability cgroup_seclabel=1
+[   46.619893] SELinux:  policy capability nnp_nosuid_transition=1
+[   46.620772] SELinux:  policy capability genfs_seclabel_symlinks=1
+[   46.621662] SELinux:  policy capability ioctl_skip_cloexec=0
+[   47.626305] cloud-init[1701]:   Running scriptlet: container-selinux-4:2.242.0-1.amzn2023.noarch        18/19
+[   48.879702] cloud-init[1701]:   Running scriptlet: docker-25.0.14-1.amzn2023.0.1.x86_64                 19/19
+[   48.889529] cloud-init[1701]:   Installing       : docker-25.0.14-1.amzn2023.0.1.x86_64                 19/19
+[   48.913785] cloud-init[1701]:   Running scriptlet: docker-25.0.14-1.amzn2023.0.1.x86_64                 19/19
+[   48.914028] cloud-init[1701]: Created symlink /etc/systemd/system/sockets.target.wants/docker.socket → /usr/lib/systemd/system/docker.socket.
+[   67.363505] cloud-init[1701]:   Running scriptlet: container-selinux-4:2.242.0-1.amzn2023.noarch        19/19
+[   67.043054] zram_generator::config[2767]: zram0: system has too much memory (3839MB), limit is 800MB, ignoring.
+[   68.682807] cloud-init[1701]:   Running scriptlet: docker-25.0.14-1.amzn2023.0.1.x86_64                 19/19
+[   68.684996] cloud-init[1701]:   Verifying        : container-selinux-4:2.242.0-1.amzn2023.noarch         1/19
+[   68.685071] cloud-init[1701]:   Verifying        : containerd-2.1.5-1.amzn2023.0.3.x86_64                2/19
+[   68.685112] cloud-init[1701]:   Verifying        : docker-25.0.14-1.amzn2023.0.1.x86_64                  3/19
+[   68.685150] cloud-init[1701]:   Verifying        : git-2.50.1-1.amzn2023.0.1.x86_64                      4/19
+[   68.685188] cloud-init[1701]:   Verifying        : git-core-2.50.1-1.amzn2023.0.1.x86_64                 5/19
+[   68.685228] cloud-init[1701]:   Verifying        : git-core-doc-2.50.1-1.amzn2023.0.1.noarch             6/19
+[   68.685267] cloud-init[1701]:   Verifying        : iptables-libs-1.8.8-3.amzn2023.0.2.x86_64             7/19
+[   68.685304] cloud-init[1701]:   Verifying        : iptables-nft-1.8.8-3.amzn2023.0.2.x86_64              8/19
+[   68.685341] cloud-init[1701]:   Verifying        : libcgroup-3.0-1.amzn2023.0.1.x86_64                   9/19
+[   68.685381] cloud-init[1701]:   Verifying        : libnetfilter_conntrack-1.0.8-2.amzn2023.0.2.x86_64   10/19
+[   68.685419] cloud-init[1701]:   Verifying        : libnfnetlink-1.0.1-19.amzn2023.0.2.x86_64            11/19
+[   68.687605] cloud-init[1701]:   Verifying        : libnftnl-1.2.2-2.amzn2023.0.2.x86_64                 12/19
+[   68.708495] cloud-init[1701]:   Verifying        : perl-Error-1:0.17029-5.amzn2023.0.2.noarch           13/19
+[   68.711063] cloud-init[1701]:   Verifying        : perl-File-Find-1.37-477.amzn2023.0.7.noarch          14/19
+[   68.713117] cloud-init[1701]:   Verifying        : perl-Git-2.50.1-1.amzn2023.0.1.noarch                15/19
+[   68.713181] cloud-init[1701]:   Verifying        : perl-TermReadKey-2.38-9.amzn2023.0.2.x86_64          16/19
+[   68.713226] cloud-init[1701]:   Verifying        : perl-lib-0.65-477.amzn2023.0.7.x86_64                17/19
+[   68.713252] cloud-init[1701]:   Verifying        : pigz-2.5-1.amzn2023.0.3.x86_64                       18/19
+[   69.049658] cloud-init[1701]:   Verifying        : runc-1.3.4-1.amzn2023.0.1.x86_64                     19/19
+[   69.051914] cloud-init[1701]: Installed:
+[   69.052825] cloud-init[1701]:   container-selinux-4:2.242.0-1.amzn2023.noarch
+[   69.053130] cloud-init[1701]:   containerd-2.1.5-1.amzn2023.0.3.x86_64
+[   69.055546] cloud-init[1701]:   docker-25.0.14-1.amzn2023.0.1.x86_64
+[   69.056813] cloud-init[1701]:   git-2.50.1-1.amzn2023.0.1.x86_64
+[   69.057457] cloud-init[1701]:   git-core-2.50.1-1.amzn2023.0.1.x86_64
+[   69.059455] cloud-init[1701]:   git-core-doc-2.50.1-1.amzn2023.0.1.noarch
+[   69.063052] cloud-init[1701]:   iptables-libs-1.8.8-3.amzn2023.0.2.x86_64
+[   69.064543] cloud-init[1701]:   iptables-nft-1.8.8-3.amzn2023.0.2.x86_64
+[   69.064609] cloud-init[1701]:   libcgroup-3.0-1.amzn2023.0.1.x86_64
+[   69.064645] cloud-init[1701]:   libnetfilter_conntrack-1.0.8-2.amzn2023.0.2.x86_64
+[   69.064683] cloud-init[1701]:   libnfnetlink-1.0.1-19.amzn2023.0.2.x86_64
+[   69.064719] cloud-init[1701]:   libnftnl-1.2.2-2.amzn2023.0.2.x86_64
+[   69.064755] cloud-init[1701]:   perl-Error-1:0.17029-5.amzn2023.0.2.noarch
+[   69.064792] cloud-init[1701]:   perl-File-Find-1.37-477.amzn2023.0.7.noarch
+[   69.064828] cloud-init[1701]:   perl-Git-2.50.1-1.amzn2023.0.1.noarch
+[   69.064861] cloud-init[1701]:   perl-TermReadKey-2.38-9.amzn2023.0.2.x86_64
+[   69.064892] cloud-init[1701]:   perl-lib-0.65-477.amzn2023.0.7.x86_64
+[   69.064925] cloud-init[1701]:   pigz-2.5-1.amzn2023.0.3.x86_64
+[   69.064957] cloud-init[1701]:   runc-1.3.4-1.amzn2023.0.1.x86_64
+[   69.064989] cloud-init[1701]: Complete!
+[   68.715307] bridge: filtering via arp/ip/ip6tables is no longer available by default. Update your scripts to load br_netfilter if you need this.
+[   68.721289] Bridge firewalling registered
+[   68.972905] Initializing XFRM netlink socket
+[   70.142258] cloud-init[1701]: Created symlink /etc/systemd/system/multi-user.target.wants/docker.service → /usr/lib/systemd/system/docker.service.
+[   69.408736] zram_generator::config[5711]: zram0: system has too much memory (3839MB), limit is 800MB, ignoring.
+[   70.572153] cloud-init[1701]: usermod: user 'ssm-user' does not exist
+[   70.575661] cloud-init[1701]: 2026-01-13 17:03:55,852 - cc_scripts_user.py[WARNING]: Failed to run module scripts-user (scripts in /var/lib/cloud/instance/scripts)
+[   70.578758] cloud-init[1701]: 2026-01-13 17:03:55,852 - util.py[WARNING]: Running module scripts-user (<module 'cloudinit.config.cc_scripts_user' from '/usr/lib/python3.9/site-packages/cloudinit/config/cc_scripts_user.py'>) failed
+ci-info: no authorized SSH keys fingerprints found for user ec2-user.
+<14>Jan 13 17:03:55 cloud-init: #############################################################
+<14>Jan 13 17:03:55 cloud-init: -----BEGIN SSH HOST KEY FINGERPRINTS-----
+<14>Jan 13 17:03:55 cloud-init: 256 SHA256:r9q1cS7GPXXcC19p0Jj2AorJnlUsR2hgJquvz7m5eHw root@ip-10-0-0-252.ap-southeast-2.compute.internal (ECDSA)
+<14>Jan 13 17:03:55 cloud-init: 256 SHA256:tufVNB79ZamuCkHFbpISDCtyyerMD0f9QLw9plBqbwE root@ip-10-0-0-252.ap-southeast-2.compute.internal (ED25519)
+<14>Jan 13 17:03:55 cloud-init: -----END SSH HOST KEY FINGERPRINTS-----
+<14>Jan 13 17:03:55 cloud-init: #############################################################
+-----BEGIN SSH HOST KEY KEYS-----
+ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBFNE0gcanN2krK+KLo0udShpxYo7sDC2U0UZ/aNy5gfFGlYiNcTTZKZoQa5Tlm/WMb0OGh9gw8kKHUSGCeIcZm8= root@ip-10-0-0-252.ap-southeast-2.compute.internal
+ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHSQ9G+1OmhSh81JIEhfpa0MDpeargquozKPHd5CtRj0 root@ip-10-0-0-252.ap-southeast-2.compute.internal
+-----END SSH HOST KEY KEYS-----
+[   70.692317] cloud-init[1701]: Cloud-init v. 22.2.2 finished at Tue, 13 Jan 2026 17:03:55 +0000. Datasource DataSourceEc2.  Up 70.68 seconds
+[[0;1;31mFAILED[0m] Failed to start [0;1;39mcloud-fina… Execute cloud user/final scripts.
+	2026-01-13T17:09:08+00:00
+
+=== Docker Images ===
+REPOSITORY   TAG       IMAGE ID   CREATED   SIZE
+
+
+=== Cloud-Init Output Log ===
+(4/19): git-core-doc-2.50.1-1.amzn2023.0.1.noar  61 MB/s | 2.8 MB     00:00    
+(5/19): iptables-libs-1.8.8-3.amzn2023.0.2.x86_  13 MB/s | 401 kB     00:00    
+(6/19): iptables-nft-1.8.8-3.amzn2023.0.2.x86_6 8.4 MB/s | 183 kB     00:00    
+(7/19): containerd-2.1.5-1.amzn2023.0.3.x86_64.  64 MB/s |  23 MB     00:00    
+(8/19): libcgroup-3.0-1.amzn2023.0.1.x86_64.rpm 652 kB/s |  75 kB     00:00    
+(9/19): libnetfilter_conntrack-1.0.8-2.amzn2023 2.2 MB/s |  58 kB     00:00    
+(10/19): libnfnetlink-1.0.1-19.amzn2023.0.2.x86 1.1 MB/s |  30 kB     00:00    
+(11/19): libnftnl-1.2.2-2.amzn2023.0.2.x86_64.r 4.4 MB/s |  84 kB     00:00    
+(12/19): perl-Error-0.17029-5.amzn2023.0.2.noar 1.6 MB/s |  41 kB     00:00    
+(13/19): perl-File-Find-1.37-477.amzn2023.0.7.n 860 kB/s |  25 kB     00:00    
+(14/19): perl-Git-2.50.1-1.amzn2023.0.1.noarch. 1.4 MB/s |  41 kB     00:00    
+(15/19): perl-TermReadKey-2.38-9.amzn2023.0.2.x 1.4 MB/s |  36 kB     00:00    
+(16/19): perl-lib-0.65-477.amzn2023.0.7.x86_64. 515 kB/s |  15 kB     00:00    
+(17/19): pigz-2.5-1.amzn2023.0.3.x86_64.rpm     3.2 MB/s |  83 kB     00:00    
+(18/19): docker-25.0.14-1.amzn2023.0.1.x86_64.r  65 MB/s |  46 MB     00:00    
+(19/19): runc-1.3.4-1.amzn2023.0.1.x86_64.rpm    15 MB/s | 3.9 MB     00:00    
+--------------------------------------------------------------------------------
+Total                                           105 MB/s |  82 MB     00:00     
+Running transaction check
+Transaction check succeeded.
+Running transaction test
+Transaction test succeeded.
+Running transaction
+  Preparing        :                                                        1/1 
+  Installing       : runc-1.3.4-1.amzn2023.0.1.x86_64                      1/19 
+  Installing       : git-core-2.50.1-1.amzn2023.0.1.x86_64                 2/19 
+  Installing       : git-core-doc-2.50.1-1.amzn2023.0.1.noarch             3/19 
+  Installing       : containerd-2.1.5-1.amzn2023.0.3.x86_64                4/19 
+  Running scriptlet: containerd-2.1.5-1.amzn2023.0.3.x86_64                4/19 
+  Installing       : pigz-2.5-1.amzn2023.0.3.x86_64                        5/19 
+  Installing       : perl-lib-0.65-477.amzn2023.0.7.x86_64                 6/19 
+  Installing       : perl-TermReadKey-2.38-9.amzn2023.0.2.x86_64           7/19 
+  Installing       : perl-File-Find-1.37-477.amzn2023.0.7.noarch           8/19 
+  Installing       : perl-Error-1:0.17029-5.amzn2023.0.2.noarch            9/19 
+  Installing       : perl-Git-2.50.1-1.amzn2023.0.1.noarch                10/19 
+  Installing       : git-2.50.1-1.amzn2023.0.1.x86_64                     11/19 
+  Installing       : libnftnl-1.2.2-2.amzn2023.0.2.x86_64                 12/19 
+  Installing       : libnfnetlink-1.0.1-19.amzn2023.0.2.x86_64            13/19 
+  Installing       : libnetfilter_conntrack-1.0.8-2.amzn2023.0.2.x86_64   14/19 
+  Installing       : iptables-libs-1.8.8-3.amzn2023.0.2.x86_64            15/19 
+  Installing       : iptables-nft-1.8.8-3.amzn2023.0.2.x86_64             16/19 
+  Running scriptlet: iptables-nft-1.8.8-3.amzn2023.0.2.x86_64             16/19 
+  Installing       : libcgroup-3.0-1.amzn2023.0.1.x86_64                  17/19 
+  Running scriptlet: container-selinux-4:2.242.0-1.amzn2023.noarch        18/19 
+  Installing       : container-selinux-4:2.242.0-1.amzn2023.noarch        18/19 
+  Running scriptlet: container-selinux-4:2.242.0-1.amzn2023.noarch        18/19 
+  Running scriptlet: docker-25.0.14-1.amzn2023.0.1.x86_64                 19/19 
+  Installing       : docker-25.0.14-1.amzn2023.0.1.x86_64                 19/19 
+  Running scriptlet: docker-25.0.14-1.amzn2023.0.1.x86_64                 19/19 
+Created symlink /etc/systemd/system/sockets.target.wants/docker.socket → /usr/lib/systemd/system/docker.socket.
+
+  Running scriptlet: container-selinux-4:2.242.0-1.amzn2023.noarch        19/19 
+  Running scriptlet: docker-25.0.14-1.amzn2023.0.1.x86_64                 19/19 
+  Verifying        : container-selinux-4:2.242.0-1.amzn2023.noarch         1/19 
+  Verifying        : containerd-2.1.5-1.amzn2023.0.3.x86_64                2/19 
+  Verifying        : docker-25.0.14-1.amzn2023.0.1.x86_64                  3/19 
+  Verifying        : git-2.50.1-1.amzn2023.0.1.x86_64                      4/19 
+  Verifying        : git-core-2.50.1-1.amzn2023.0.1.x86_64                 5/19 
+  Verifying        : git-core-doc-2.50.1-1.amzn2023.0.1.noarch             6/19 
+  Verifying        : iptables-libs-1.8.8-3.amzn2023.0.2.x86_64             7/19 
+  Verifying        : iptables-nft-1.8.8-3.amzn2023.0.2.x86_64              8/19 
+  Verifying        : libcgroup-3.0-1.amzn2023.0.1.x86_64                   9/19 
+  Verifying        : libnetfilter_conntrack-1.0.8-2.amzn2023.0.2.x86_64   10/19 
+  Verifying        : libnfnetlink-1.0.1-19.amzn2023.0.2.x86_64            11/19 
+  Verifying        : libnftnl-1.2.2-2.amzn2023.0.2.x86_64                 12/19 
+  Verifying        : perl-Error-1:0.17029-5.amzn2023.0.2.noarch           13/19 
+  Verifying        : perl-File-Find-1.37-477.amzn2023.0.7.noarch          14/19 
+  Verifying        : perl-Git-2.50.1-1.amzn2023.0.1.noarch                15/19 
+  Verifying        : perl-TermReadKey-2.38-9.amzn2023.0.2.x86_64          16/19 
+  Verifying        : perl-lib-0.65-477.amzn2023.0.7.x86_64                17/19 
+  Verifying        : pigz-2.5-1.amzn2023.0.3.x86_64                       18/19 
+  Verifying        : runc-1.3.4-1.amzn2023.0.1.x86_64                     19/19 
+
+Installed:
+  container-selinux-4:2.242.0-1.amzn2023.noarch                                 
+  containerd-2.1.5-1.amzn2023.0.3.x86_64                                        
+  docker-25.0.14-1.amzn2023.0.1.x86_64                                          
+  git-2.50.1-1.amzn2023.0.1.x86_64                                              
+  git-core-2.50.1-1.amzn2023.0.1.x86_64                                         
+  git-core-doc-2.50.1-1.amzn2023.0.1.noarch                                     
+  iptables-libs-1.8.8-3.amzn2023.0.2.x86_64                                     
+  iptables-nft-1.8.8-3.amzn2023.0.2.x86_64                                      
+  libcgroup-3.0-1.amzn2023.0.1.x86_64                                           
+  libnetfilter_conntrack-1.0.8-2.amzn2023.0.2.x86_64                            
+  libnfnetlink-1.0.1-19.amzn2023.0.2.x86_64                                     
+  libnftnl-1.2.2-2.amzn2023.0.2.x86_64                                          
+  perl-Error-1:0.17029-5.amzn2023.0.2.noarch                                    
+  perl-File-Find-1.37-477.amzn2023.0.7.noarch                                   
+  perl-Git-2.50.1-1.amzn2023.0.1.noarch                                         
+  perl-TermReadKey-2.38-9.amzn2023.0.2.x86_64                                   
+  perl-lib-0.65-477.amzn2023.0.7.x86_64                                         
+  pigz-2.5-1.amzn2023.0.3.x86_64                                                
+  runc-1.3.4-1.amzn2023.0.1.x86_64                                              
+
+Complete!
+Created symlink /etc/systemd/system/multi-user.target.wants/docker.service → /usr/lib/systemd/system/docker.service.
+usermod: user 'ssm-user' does not exist
+2026-01-13 17:03:55,852 - cc_scripts_user.py[WARNING]: Failed to run module scripts-user (scripts in /var/lib/cloud/instance/scripts)
+2026-01-13 17:03:55,852 - util.py[WARNING]: Running module scripts-user (<module 'cloudinit.config.cc_scripts_user' from '/usr/lib/python3.9/site-packages/cloudinit/config/cc_scripts_user.py'>) failed
+Cloud-init v. 22.2.2 finished at Tue, 13 Jan 2026 17:03:55 +0000. Datasource DataSourceEc2.  Up 70.68 seconds
+
+
+=== User Data Log ===
+No user-data.log found
+
+
+Log saved to: scripts/logs/devbox-henry-z5416365-pc-20260114-210428.log

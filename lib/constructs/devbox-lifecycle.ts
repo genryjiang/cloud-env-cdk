@@ -12,7 +12,7 @@ export class DevboxLifecycle extends Construct {
 
     const cleanupFunction = new lambda.Function(this, 'Cleanup', {
       runtime: lambda.Runtime.NODEJS_20_X,
-      handler: 'index.handler',
+      handler: 'provision.handler',
       code: lambda.Code.fromInline(`
         const { EC2Client, DescribeInstancesCommand, StopInstancesCommand, TerminateInstancesCommand } = require('@aws-sdk/client-ec2');
         const { CloudWatchClient, GetMetricStatisticsCommand } = require('@aws-sdk/client-cloudwatch');

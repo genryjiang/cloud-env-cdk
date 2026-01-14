@@ -21,7 +21,7 @@ export class DevboxProvisioner extends Construct {
 
     this.function = new lambda.Function(this, 'Function', {
       runtime: lambda.Runtime.NODEJS_20_X,
-      handler: 'index.handler',
+      handler: 'provision.handler',
       code: lambda.Code.fromAsset('lambda/provisioner'),
       timeout: Duration.minutes(5),
       vpc: props.vpc,

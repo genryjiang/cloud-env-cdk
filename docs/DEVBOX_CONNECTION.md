@@ -46,6 +46,14 @@ or, if you already know the instance ID:
 aws ssm start-session --target i-xxxxxxxx --region ap-southeast-2
 ```
 
+## Connect via SSH (one command)
+
+```bash
+./scripts/devbox-cli.sh ssh
+```
+
+This uses EC2 Instance Connect to push your SSH key and opens an SSH session over SSM. Defaults to `~/.ssh/id_ed25519.pub` (or `~/.ssh/id_rsa.pub`) and user `ubuntu`. Override with `SSH_PUBKEY_PATH`, `SSH_KEY_PATH`, or `SSH_USER`.
+
 ## VS Code Remote-SSH
 
 1. Generate SSH config:

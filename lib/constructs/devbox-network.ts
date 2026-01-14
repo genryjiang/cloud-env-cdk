@@ -27,6 +27,9 @@ export class DevboxNetwork extends Construct {
     this.vpc.addInterfaceEndpoint('Ecr', { service: ec2.InterfaceVpcEndpointAwsService.ECR });
     this.vpc.addInterfaceEndpoint('EcrDocker', { service: ec2.InterfaceVpcEndpointAwsService.ECR_DOCKER });
     this.vpc.addGatewayEndpoint('S3', { service: ec2.GatewayVpcEndpointAwsService.S3 });
+    
+    // STS endpoint for AWS CLI authentication
+    this.vpc.addInterfaceEndpoint('Sts', { service: ec2.InterfaceVpcEndpointAwsService.STS });
 
     // DynamoDB and EC2 endpoints for Lambda provisioner
     this.vpc.addGatewayEndpoint('DynamoDB', { service: ec2.GatewayVpcEndpointAwsService.DYNAMODB });

@@ -33,38 +33,28 @@ if [ "$instance_id" = "null" ]; then
   exit 1
 fi
 
-echo "Configuring SSH for devbox $instance_id..."
-
-mkdir -p ~/.ssh
-touch ~/.ssh/config
-
-if grep -q "Host devbox" ~/.ssh/config; then
-  sed -i.bak "/Host devbox/,/ProxyCommand/d" ~/.ssh/config
-fi
-
-cat >> ~/.ssh/config << EOF
-
-Host devbox
-    HostName $instance_id
-    User ec2-user
-    ForwardAgent yes
-    ProxyCommand sh -c "aws ssm start-session --target %h --document-name AWS-StartSSHSession --parameters 'portNumber=%p' --region $REGION"
-EOF
-
-echo "✅ SSH config updated!"
+echo "✅ Devbox found: $instance_id"
 echo ""
-echo "Next steps:"
-echo "1. Install VS Code extensions:"
-echo "   code --install-extension ms-vscode-remote.remote-ssh"
-echo "   code --install-extension ms-vscode-remote.remote-containers"
+echo "Connect via SSM (terminal only):"
+echo "  bash scripts/devbox-cli.sh connect"
 echo ""
-echo "2. Add your GitHub SSH key to agent:"
-echo "   ssh-add ~/.ssh/id_rsa"
+echo "For VS Code Remote-SSH + Dev Containers:"
+echo "1. Terminal 1 (keep running):"
+echo "   aws ssm start-session --target $instance_id --document-name AWS-StartPortForwardingSession --parameters 'portNumber=22,localPortNumber=2222' --region $REGION"
 echo ""
-echo "3. Connect in VS Code:"
-echo "   F1 → Remote-SSH: Connect to Host → devbox"
+echo "2. Add to ~/.ssh/config:"
+echo "   Host devbox"
+echo "       HostName localhost"
+echo "       User ec2-user"
+echo "       Port 2222"
+echo "       StrictHostKeyChecking no"
+echo "       UserKnownHostsFile /dev/null"
 echo ""
-echo "4. Clone repo in /home/ec2-user/workspace"
+echo "3. Generate temporary SSH key (valid 60 seconds):"
+echo "   aws ec2-instance-connect send-ssh-public-key --instance-id $instance_id --instance-os-user ec2-user --ssh-public-key file://~/.ssh/id_ed25519.pub --region $REGION"
 echo ""
-echo "5. Reopen in Dev Container:"
-echo "   F1 → Dev Containers: Reopen in Container"
+echo "4. Within 60 seconds, connect:"
+echo "   ssh devbox"
+echo "   OR VS Code: F1 → Remote-SSH: Connect to Host → devbox"
+echo ""
+echo "5. Clone repo in /home/ec2-user/workspace, then F1 → Dev Containers: Reopen in Container"

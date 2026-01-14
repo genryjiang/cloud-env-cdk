@@ -44,12 +44,18 @@ export class DevboxSharedResources extends Construct {
 
     this.artifactsBucket.grantReadWrite(this.devboxRole);
     this.devboxRole.addToPolicy(new iam.PolicyStatement({
-      actions: ['ecr:GetAuthorizationToken', 'ecr:BatchGetImage', 'ecr:GetDownloadUrlForLayer'],
+      actions: [
+        'ecr:GetAuthorizationToken',
+        'ecr:BatchGetImage',
+        'ecr:GetDownloadUrlForLayer',
+        'ecr:DescribeRepositories',
+      ],
       resources: ['*'],
     }));
 
     // Launch template
     this.launchTemplate = new ec2.LaunchTemplate(this, 'Template', {
+      launchTemplateName: 'DevboxTemplate-v6',
       instanceType: ec2.InstanceType.of(ec2.InstanceClass.T3, ec2.InstanceSize.MEDIUM),
       machineImage: ec2.MachineImage.latestAmazonLinux2023(),
       role: this.devboxRole,
@@ -64,30 +70,20 @@ export class DevboxSharedResources extends Construct {
 
     this.launchTemplate.userData?.addCommands(
       '#!/bin/bash',
-      'set -e',
-      '',
-      '# Install Docker and tools',
-      'yum install -y docker git jq',
+      'exec > >(tee /var/log/user-data.log) 2>&1',
+      'yum install -y docker git jq ec2-instance-connect',
       'systemctl start docker',
       'systemctl enable docker',
       'usermod -aG docker ec2-user',
-      'usermod -aG docker ssm-user',
-      '',
-      '# Pre-pull Dev Container image from ECR',
-      'sleep 10',
-      'REGION=$(ec2-metadata --availability-zone | sed "s/[a-z]$//" | cut -d" " -f2)',
+      'systemctl start sshd',
+      'systemctl enable sshd',
+      'REGION=$(TOKEN=`curl -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600"` && curl -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.254/latest/meta-data/placement/region)',
       'ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)',
       'ECR_REPO=$(aws ecr describe-repositories --region $REGION --query "repositories[?contains(repositoryName, \'embddevecr\')].repositoryName" --output text | head -1)',
-      'if [ -n "$ECR_REPO" ]; then',
-      '  aws ecr get-login-password --region $REGION | docker login --username AWS --password-stdin $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com',
-      '  docker pull $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/$ECR_REPO:linux-amd64-latest || true',
-      'fi',
-      '',
-      '# Setup workspace directory',
+      'aws ecr get-login-password --region $REGION | docker login --username AWS --password-stdin $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com',
+      'docker pull $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/$ECR_REPO:linux-amd64-latest',
       'mkdir -p /home/ec2-user/workspace',
       'chown ec2-user:ec2-user /home/ec2-user/workspace',
-      '',
-      '# Configure Git credential helper',
       'sudo -u ec2-user git config --global credential.helper store',
     );
   }

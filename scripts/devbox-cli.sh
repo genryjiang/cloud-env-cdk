@@ -68,6 +68,32 @@ stop() {
     -d "{\"action\": \"stop\", \"userId\": \"$user_id\"}" | jq .
 }
 
+start() {
+  local user_id="${1:-$(get_user_id)}"
+  local api_url=$(get_api_url)
+
+  response=$(curl -s -X POST "${api_url}devbox" \
+    -H "Content-Type: application/json" \
+    -d "{\"action\": \"status\", \"userId\": \"$user_id\"}")
+
+  instance_id=$(echo "$response" | jq -r '.instanceId')
+  status=$(echo "$response" | jq -r '.status')
+
+  if [ "$instance_id" = "null" ]; then
+    echo "No devbox found for $user_id"
+    exit 1
+  fi
+
+  if [ "$status" = "running" ]; then
+    echo "Devbox is already running"
+    exit 0
+  fi
+
+  echo "Starting devbox $instance_id..."
+  aws ec2 start-instances --instance-ids "$instance_id" --region "$REGION" > /dev/null
+  echo "Devbox starting. Wait 1-2 minutes before connecting."
+}
+
 terminate() {
   local user_id="${1:-$(get_user_id)}"
   
@@ -178,6 +204,85 @@ connect() {
   aws ssm start-session --target "$instance_id" --region "$REGION"
 }
 
+find_ssh_pubkey() {
+  if [ -n "$SSH_PUBKEY_PATH" ] && [ -f "$SSH_PUBKEY_PATH" ]; then
+    echo "$SSH_PUBKEY_PATH"
+    return 0
+  fi
+
+  if [ -n "$SSH_KEY_PATH" ] && [ -f "${SSH_KEY_PATH}.pub" ]; then
+    echo "${SSH_KEY_PATH}.pub"
+    return 0
+  fi
+
+  if [ -f "$HOME/.ssh/id_ed25519.pub" ]; then
+    echo "$HOME/.ssh/id_ed25519.pub"
+    return 0
+  fi
+
+  if [ -f "$HOME/.ssh/id_rsa.pub" ]; then
+    echo "$HOME/.ssh/id_rsa.pub"
+    return 0
+  fi
+
+  return 1
+}
+
+ssh_connect() {
+  local user_id="${1:-$(get_user_id)}"
+  local api_url=$(get_api_url)
+  local ssh_user="${SSH_USER:-ubuntu}"
+
+  echo "Looking up devbox for $user_id..."
+
+  response=$(curl -s -X POST "${api_url}devbox" \
+    -H "Content-Type: application/json" \
+    -d "{\"action\": \"status\", \"userId\": \"$user_id\"}")
+
+  instance_id=$(echo "$response" | jq -r '.instanceId')
+  status=$(echo "$response" | jq -r '.status')
+
+  if [ "$instance_id" = "null" ]; then
+    echo "No devbox found. Provision one first:"
+    echo "   ./scripts/devbox-cli.sh provision $user_id"
+    exit 1
+  fi
+
+  if [ "$status" != "running" ]; then
+    echo "Devbox is $status, not running"
+    exit 1
+  fi
+
+  local pubkey_path
+  pubkey_path=$(find_ssh_pubkey) || true
+  if [ -z "$pubkey_path" ]; then
+    echo "No SSH public key found. Generate one with:"
+    echo "  ssh-keygen -t ed25519 -f ~/.ssh/id_ed25519"
+    exit 1
+  fi
+
+  local private_key="${pubkey_path%.pub}"
+  if [ ! -f "$private_key" ]; then
+    echo "Private key not found for $pubkey_path"
+    exit 1
+  fi
+
+  echo "Found instance: $instance_id"
+  echo "Pushing SSH key for $ssh_user..."
+  aws ec2-instance-connect send-ssh-public-key \
+    --instance-id "$instance_id" \
+    --instance-os-user "$ssh_user" \
+    --ssh-public-key "file://$pubkey_path" \
+    --region "$REGION" \
+    --output text >/dev/null
+
+  echo "Connecting via SSH over SSM..."
+  ssh -i "$private_key" \
+    -o IdentitiesOnly=yes \
+    -o "ProxyCommand=aws ssm start-session --target %h --document-name AWS-StartSSHSession --parameters 'portNumber=%p' --region $REGION" \
+    "$ssh_user@$instance_id"
+}
+
 # AI GEN (and used for testing; final will be different)
 #   Final Ver: CLI that lives in devbox, call to push
 
@@ -254,11 +359,17 @@ case "${1:-help}" in
   stop)
     stop "$2"
     ;;
+  start)
+    start "$2"
+    ;;
   terminate)
     terminate "$2"
     ;;
   connect)
     connect "$2"
+    ;;
+  ssh)
+    ssh_connect "$2"
     ;;
   upload)
     upload "$2" "$3"
@@ -280,6 +391,8 @@ case "${1:-help}" in
     echo "  logs [user]        - View instance boot logs (check Docker setup)"
     echo "  check [user]       - Check Docker status and ECR images on running instance"
     echo "  connect [user]     - Connect to devbox via SSM"
+    echo "  ssh [user]         - SSH via SSM (pushes SSH key)"
+    echo "  start [user]       - Start a stopped devbox"
     echo "  stop [user]        - Stop devbox (preserves data)"
     echo "  terminate [user]   - Delete devbox (destroys data)"
     echo ""
@@ -287,6 +400,11 @@ case "${1:-help}" in
     echo "  upload <file> [user]      - Upload build artifact to S3"
     echo "  download [user] <file>    - Download artifact from S3"
     echo "  artifacts [user]          - List all artifacts for user"
+    echo ""
+    echo "SSH options:"
+    echo "  SSH_USER=ubuntu           - OS user for SSH (default: ubuntu)"
+    echo "  SSH_PUBKEY_PATH=...       - Public key to push (default: ~/.ssh/id_ed25519.pub)"
+    echo "  SSH_KEY_PATH=...          - Private key path (uses <path>.pub)"
     echo ""
     echo "If user_id is not provided, uses STS caller ARN username (fallback: \$USER)"
     ;;

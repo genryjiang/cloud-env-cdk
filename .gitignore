@@ -8,6 +8,9 @@ node_modules
 .cdk.staging
 cdk.out
 
+# macOS
+.DS_Store
+
 # Ignore log files in scripts/logs directory
 scripts/logs/
 *.log

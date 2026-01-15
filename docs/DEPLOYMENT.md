@@ -1,5 +1,7 @@
 # Deployment Guide
 
+*NOTE: This guide is more for Embedded Software Members for a quick guide on how to deploy code infra.
+
 This repo deploys two CDK stacks. You can deploy either or both:
 
 - Srp130AwsInfraStack: dev container image build pipeline (ECR, CodeBuild, CodePipeline, artifacts bucket)
@@ -40,7 +42,7 @@ cdk deploy Srp130AwsInfraStack
 
 ### Ensure IAM groups exist
 
-The stack attaches policies to existing IAM groups. Create them if they do not exist:
+The stack attaches policies to existing IAM groups. Create them if they do not exist
 
 ```bash
 aws iam create-group --group-name dev-embd-access
@@ -50,6 +52,7 @@ aws iam create-group --group-name dev-all-access
 ### Deploy
 
 ```bash
+# Cloud Env Only
 cdk deploy AsgardCloudEnvStack
 ```
 

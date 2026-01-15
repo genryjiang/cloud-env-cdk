@@ -152,8 +152,10 @@ RUN tar -xzf /tmp/qnx800.tar.gz -C /home/${USER_NAME} --no-same-owner --no-same-
 
 USER ${USER_NAME}
 
-
-
+# Copy QNX license to root's home so it works when running as root in devcontainer
+#RUN mkdir -p /root/.qnx && \
+#    cp -r /home/${USER_NAME}/.qnx/* /root/.qnx/ && \
+#    chmod -R 755 /root/.qnx
 
 WORKDIR /workspace
 

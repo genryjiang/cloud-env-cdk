@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "devbox"
+version = "0.1.0"
+description = "Devbox CLI for cloud development workflows"
+readme = "README.md"
+requires-python = ">=3.9"
+authors = [
+  {name = "Devbox CLI"}
+]
+
+[project.scripts]
+devbox = "apsis_sr.cli:main"

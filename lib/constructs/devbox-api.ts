@@ -20,10 +20,13 @@ export class DevboxApi extends Construct {
         allowOrigins: apigateway.Cors.ALL_ORIGINS,
         allowMethods: ['POST', 'GET'],
       },
+      defaultMethodOptions: {
+        authorizationType: apigateway.AuthorizationType.IAM
+      }
     });
 
     const integration = new apigateway.LambdaIntegration(props.provisionerFunction);
-    
+
     const devbox = this.api.root.addResource('devbox');
     devbox.addMethod('POST', integration); // Provision
     devbox.addMethod('GET', integration);  // Status

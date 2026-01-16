@@ -1,0 +1,2 @@
+[console_scripts]
+devbox = apsis_sr.cli:main

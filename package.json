@@ -1,8 +1,8 @@
 {
-  "name": "srp-130_aws_infra",
+  "name": "dev_container_infra",
   "version": "0.1.0",
   "bin": {
-    "srp-130_aws_infra": "bin/srp-130_aws_infra.js"
+    "dev_container_infra": "bin/dev-container-infra.js"
   },
   "scripts": {
     "build": "tsc",

@@ -7,9 +7,18 @@ import { DevboxProvisioner } from './constructs/devbox-provisioner';
 import { DevboxLifecycle } from './constructs/devbox-lifecycle';
 import { DevboxApi } from './constructs/devbox-api';
 
-export class AsgardCloudEnvStack extends Stack {
+export class CloudDevEnvStack extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props);
+
+    // Create IAM groups
+    const devAccessGroup = new iam.Group(this, 'DevAccessGroup', {
+      groupName: 'dev-access-group',
+    });
+
+    const devAllAccessGroup = new iam.Group(this, 'DevAllAccessGroup', {
+      groupName: 'dev-all-access',
+    });
 
     const network = new DevboxNetwork(this, 'Network');
 
@@ -54,6 +63,10 @@ export class AsgardCloudEnvStack extends Stack {
           },
         }),
         new iam.PolicyStatement({
+          actions: ['execute-api:Invoke'],
+          resources: [`arn:aws:execute-api:${this.region}:${this.account}:*/*/POST/devbox`, `arn:aws:execute-api:${this.region}:${this.account}:*/*/GET/devbox`],
+        }),
+        new iam.PolicyStatement({
           actions: ['ec2:DescribeInstances', 'ec2:DescribeInstanceStatus'],
           resources: ['*'],
         }),
@@ -72,14 +85,22 @@ export class AsgardCloudEnvStack extends Stack {
       ],
     });
 
-    // Attach policies to existing groups using CFN
-    const dev_embd = iam.Group.fromGroupName(this, 'dev-embd', 'dev-embd-access');
-
-    devboxUserPolicy.attachToGroup(dev_embd);
-    shared.artifactsBucket.grantReadWrite(dev_embd);
+    // TODO: Update IAM group name to match your organization's group
+    devboxUserPolicy.attachToGroup(devAccessGroup);
+    shared.artifactsBucket.grantReadWrite(devAccessGroup);
+    
+    // Grant ECR permissions
+    devAccessGroup.addToPolicy(new iam.PolicyStatement({
+      actions: [
+        'ecr:GetAuthorizationToken',
+        'ecr:BatchGetImage',
+        'ecr:GetDownloadUrlForLayer',
+      ],
+      resources: ['*'],
+    }));
 
     new iam.CfnGroupPolicy(this, 'AllAccessAdmin', {
-      groupName: 'dev-all-access',
+      groupName: devAllAccessGroup.groupName,
       policyName: 'AdminAccess',
       policyDocument: {
         Version: '2012-10-17',

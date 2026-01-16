@@ -1,12 +1,10 @@
 import * as cdk from 'aws-cdk-lib';
 import { Template, Match } from 'aws-cdk-lib/assertions';
-import * as Srp130AwsInfra from '../lib/srp-130_aws_infra-stack';
+import * as DevContainerInfra from '../lib/dev-container-build-stack';
 
 test('SQS Queue and SNS Topic Created', () => {
   const app = new cdk.App();
-  // WHEN
-  const stack = new Srp130AwsInfra.Srp130AwsInfraStack(app, 'MyTestStack');
-  // THEN
+  const stack = new DevContainerInfra.DevContainerBuildStack(app, 'MyTestStack');
 
   const template = Template.fromStack(stack);
 

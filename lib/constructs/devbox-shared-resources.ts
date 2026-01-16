@@ -55,7 +55,7 @@ export class DevboxSharedResources extends Construct {
 
     // Launch template
     this.launchTemplate = new ec2.LaunchTemplate(this, 'Template', {
-      launchTemplateName: 'DevboxTemplate-v9-sso',
+      launchTemplateName: 'DevboxTemplate-v9',
       instanceType: ec2.InstanceType.of(ec2.InstanceClass.T3, ec2.InstanceSize.MEDIUM),
       machineImage: ec2.MachineImage.latestAmazonLinux2023(),
       role: this.devboxRole,
@@ -92,7 +92,8 @@ export class DevboxSharedResources extends Construct {
       '# Get AWS metadata',
       'REGION=$(TOKEN=`curl -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600"` && curl -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.254/latest/meta-data/placement/region)',
       'ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)',
-      'ECR_REPO=$(aws ecr describe-repositories --region $REGION --query "repositories[?contains(repositoryName, \'embddevecr\')].repositoryName" --output text | head -1)',
+      // TODO: Update ECR repository name pattern to match your repository
+      'ECR_REPO=$(aws ecr describe-repositories --region $REGION --query "repositories[?contains(repositoryName, \'devcontainerecr\')].repositoryName" --output text | head -1)',
       '',
       '# Login to ECR and pull dev container image',
       'aws ecr get-login-password --region $REGION | docker login --username AWS --password-stdin $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com',

@@ -10,18 +10,6 @@ Recommended (pipx):
 pipx install .
 ```
 
-Or from a git repo:
-
-```sh
-pipx install git+ssh://git@github.com/ORG/REPO.git
-```
-
-Run without install:
-
-```sh
-python3 -m apsis_sr --help
-```
-
 ## Requirements
 
 - Python 3.9+

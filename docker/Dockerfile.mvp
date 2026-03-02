@@ -1,4 +1,4 @@
-# Generic high-level development container image.
+# MVP Dockerfile: lightweight RTI Connext image.
 FROM eclipse-temurin:8-jdk-jammy AS jdk
 # Build virtualcan server (Rust) once and copy binary into the dev image.
 FROM rust:1-bookworm AS virtualcan-builder
@@ -13,11 +13,10 @@ RUN git clone https://github.com/windelbouwman/virtualcan.git && \
 
 # Required base OS
 FROM ubuntu:22.04
-# syntax=docker/dockerfile:1
 
 # Label the custom image (increment version as needed).
-LABEL version="0.2.0"
-LABEL description="Generic cloud development environment container"
+LABEL version="1.2"
+LABEL description="Generic MVP RTI Connext development environment"
 
 # Disable Prompt During Packages Installation
 ARG DEBIAN_FRONTEND=noninteractive
@@ -67,8 +66,7 @@ RUN apt update && apt install -y \
 	net-tools \
 	tree \
 	mosquitto \
-	mosquitto-clients \
-	libmosquitto-dev
+	mosquitto-clients
 
 # Install python 3.11
 RUN add-apt-repository ppa:deadsnakes/ppa -y && \
@@ -96,59 +94,22 @@ ARG USER_NAME
 ARG GROUP_NAME
 ARG USER_ID
 ARG GROUP_ID
-ARG QNX_SDP_VERSION
-
-ENV QNX_SDP_VERSION=$QNX_SDP_VERSION
-
-ENV PS1='[QNX] (\u) \w$ '
 
 RUN getent group ${GROUP_NAME} || groupadd --gid ${GROUP_ID} ${GROUP_NAME} && \
 	useradd --uid ${USER_ID} --gid ${GROUP_ID} --groups sudo --no-log-init --create-home ${USER_NAME} && \
 	echo "${USER_NAME}:password" | chpasswd
 
-# Create a folder for python venv
-RUN mkdir -p /usr/local/qnx
-RUN chown ${USER_NAME} /usr/local/qnx
 USER ${USER_NAME}
-
-# Install standard development tools
-# Install pip packages needed for testing
-# Needed to build numpy from source
-RUN cd /usr/local/qnx && \
-	python3.11 -m venv env && \
-	. ./env/bin/activate && \
-	python3 -m pip install -U \
-	pip \
-	lark \
-	Cython \
-	wheel \
-	argcomplete \
-	flake8-blind-except \
-	flake8-builtins \
-	flake8-class-newline \
-	flake8-comprehensions \
-	flake8-deprecated \
-	flake8-docstrings \
-	flake8-import-order \
-	flake8-quotes \
-	pytest-repeat \
-	pytest-rerunfailures \
-	pytest \
-	pybind11 \
-	requests
-
 
 # Copy s3 archives taken from codebuild
 # Unpack into /home/usr-name/
 # Copy s3 archives taken from codebuild
-COPY artifacts/qnx800.tar.gz /tmp/qnx800.tar.gz
 COPY artifacts/rti_connext-7.3.1.tar.gz /tmp/rti_connext-7.3.1.tar.gz
 
 USER root
 # Unpack into /home/${USER_NAME}/ (or subfolders), then clean up
-RUN tar -xzf /tmp/qnx800.tar.gz -C /home/${USER_NAME} --no-same-owner --no-same-permissions \
- && tar -xzf /tmp/rti_connext-7.3.1.tar.gz -C /home/${USER_NAME} --no-same-owner --no-same-permissions \
- && rm -f /tmp/qnx800.tar.gz /tmp/rti_connext-7.3.1.tar.gz \
+RUN tar -xzf /tmp/rti_connext-7.3.1.tar.gz -C /home/${USER_NAME} --no-same-owner --no-same-permissions \
+ && rm -f /tmp/rti_connext-7.3.1.tar.gz \
  && chown -R ${USER_NAME}:${GROUP_NAME} /home/${USER_NAME}
 
 USER ${USER_NAME}
@@ -156,20 +117,14 @@ USER ${USER_NAME}
 # Install Oh My Zsh for the developer user (non-interactive)
 RUN RUNZSH=no CHSH=no sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
 
-# Copy QNX license to root's home so it works when running as root in devcontainer
-#RUN mkdir -p /root/.qnx && \
-#    cp -r /home/${USER_NAME}/.qnx/* /root/.qnx/ && \
-#    chmod -R 755 /root/.qnx
-
 # Set ENV variables to RTI Connext
 ENV NDDSHOME=/home/${USER_NAME}/rti_connext_dds-7.3.1
+# Adding RTI_connext-7.3.1/bin directory to PATH env var
+ENV PATH="$NDDSHOME/bin:$PATH"
 # Default shell is bash, run RTI provided script to set lib paths
 RUN /bin/bash -c "echo 'source $NDDSHOME/resource/scripts/rtisetenv_x64Linux4gcc7.3.0.bash' >> ~/.bashrc"
 
-
 WORKDIR /workspace
 
-
 RUN java -version && javac -version
-RUN /bin/bash -c "echo 'source $HOME/qnx800/qnxsdp-env.sh' >> ~/.bashrc"
 CMD ["/bin/bash", "-i"]

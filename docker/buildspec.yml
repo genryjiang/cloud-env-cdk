@@ -1,1 +1,49 @@
-# TODO: Buildspec for Dockerfile
+version: 0.2
+
+env:
+  variables:
+    AWS_DEFAULT_REGION: ap-southeast-2
+    # TODO: update to your artifacts bucket
+    S3_BUCKET: your-dev-artifacts-bucket
+    QNX_SDP: qnx/qnx-sdp.tar.gz
+    RTI: rti/rti_connext-7.3.1.tar.gz
+
+phases:
+  pre_build:
+    commands:
+      - mkdir -p artifacts
+      - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $ECR_URL
+      - GIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c1-6)
+      - AMD64_TAG=amd64-$GIT_HASH
+      - AMD64_LATEST_TAG=amd64-latest
+      - MVP_TAG=mvp-$GIT_HASH
+      - MVP_LATEST_TAG=mvp-latest
+      - aws s3 cp "s3://${S3_BUCKET}/${QNX_SDP}" "artifacts/qnx800.tar.gz"
+      - aws s3 cp "s3://${S3_BUCKET}/${RTI}" "artifacts/rti_connext-7.3.1.tar.gz"
+      # Pull existing images for layer caching
+      - docker pull $ECR_URL/$IMAGE_REPO_NAME:$AMD64_LATEST_TAG || true
+      - docker pull $ECR_URL/$IMAGE_REPO_NAME:$MVP_LATEST_TAG || true
+  build:
+    commands:
+      # Build full image for AMD64 with cache
+      - docker build --platform linux/amd64 -f docker/Dockerfile --cache-from $ECR_URL/$IMAGE_REPO_NAME:$AMD64_LATEST_TAG --build-arg USER_NAME=developer --build-arg GROUP_NAME=developer --build-arg USER_ID=1000 --build-arg GROUP_ID=1000 --build-arg QNX_SDP_VERSION=8.0 -t $IMAGE_REPO_NAME:$AMD64_TAG .
+      - docker build --platform linux/amd64 -f docker/Dockerfile --cache-from $ECR_URL/$IMAGE_REPO_NAME:$AMD64_LATEST_TAG --build-arg USER_NAME=developer --build-arg GROUP_NAME=developer --build-arg USER_ID=1000 --build-arg GROUP_ID=1000 --build-arg QNX_SDP_VERSION=8.0 -t $IMAGE_REPO_NAME:$AMD64_LATEST_TAG .
+
+      # Build MVP image for AMD64 with cache
+      - docker build --platform linux/amd64 -f docker/Dockerfile.mvp --cache-from $ECR_URL/$IMAGE_REPO_NAME:$MVP_LATEST_TAG --build-arg USER_NAME=developer --build-arg GROUP_NAME=developer --build-arg USER_ID=1000 --build-arg GROUP_ID=1000 -t $IMAGE_REPO_NAME:$MVP_TAG .
+      - docker build --platform linux/amd64 -f docker/Dockerfile.mvp --cache-from $ECR_URL/$IMAGE_REPO_NAME:$MVP_LATEST_TAG --build-arg USER_NAME=developer --build-arg GROUP_NAME=developer --build-arg USER_ID=1000 --build-arg GROUP_ID=1000 -t $IMAGE_REPO_NAME:$MVP_LATEST_TAG .
+
+      # Tag for ECR
+      - docker tag $IMAGE_REPO_NAME:$AMD64_TAG $ECR_URL/$IMAGE_REPO_NAME:$AMD64_TAG
+      - docker tag $IMAGE_REPO_NAME:$AMD64_LATEST_TAG $ECR_URL/$IMAGE_REPO_NAME:$AMD64_LATEST_TAG
+      - docker tag $IMAGE_REPO_NAME:$MVP_TAG $ECR_URL/$IMAGE_REPO_NAME:$MVP_TAG
+      - docker tag $IMAGE_REPO_NAME:$MVP_LATEST_TAG $ECR_URL/$IMAGE_REPO_NAME:$MVP_LATEST_TAG
+
+  post_build:
+    commands:
+      - echo Pushing docker images...
+      - docker push $ECR_URL/$IMAGE_REPO_NAME:$AMD64_TAG
+      - docker push $ECR_URL/$IMAGE_REPO_NAME:$AMD64_LATEST_TAG
+      - docker push $ECR_URL/$IMAGE_REPO_NAME:$MVP_TAG
+      - docker push $ECR_URL/$IMAGE_REPO_NAME:$MVP_LATEST_TAG
+ 

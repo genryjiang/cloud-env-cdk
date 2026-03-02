@@ -1,85 +1,65 @@
-# devbox
+# Devbox CLI
 
-Generic CLI for devbox lifecycle and helpers.
+Generic CLI for cloud devbox lifecycle, SSH access helpers, artifact transfer, and Docker image pull/update.
 
 ## Install
 
-Recommended (pipx):
-
 ```sh
-pipx install .
+npm install -g .
 ```
 
 ## Requirements
 
-- Python 3.9+
+- Node.js 18+
 - AWS CLI
-- jq
-- docker (for docker update)
-- ssh (for devbox ssh)
+- Docker (for `docker` subcommands)
+- SSH + Session Manager plugin (for `cloud connect`)
 
 ## Quick Start
 
 ```sh
-devbox status
-devbox ssh-config
-devbox connect
+devbox cloud status
+devbox cloud init
+devbox cloud connect
 ```
 
 ## Commands
 
-### Devbox lifecycle
+### Cloud lifecycle
 
 ```sh
-devbox provision [--user-id <id>] [--wait]
-devbox status [--user-id <id>]
-devbox start [--user-id <id>]
-devbox stop [--user-id <id>]
-devbox terminate [--user-id <id>]
-devbox logs [--user-id <id>] [--save] [--full]
-devbox check [--user-id <id>]
-devbox connect [--user-id <id>]
+devbox cloud provision [--user-id <id>] [--wait]
+devbox cloud status [--user-id <id>]
+devbox cloud start [--user-id <id>]
+devbox cloud stop [--user-id <id>]
+devbox cloud terminate [--user-id <id>]
+devbox cloud connect [--user-id <id>] [--ssh-user <name>]
+devbox cloud init [--user-id <id>] [--wsl]
 ```
 
-### SSH helpers
-
-SSH over SSM (automatically pushes public key):
+### Debug
 
 ```sh
-devbox ssh
+devbox debug --cloud-logs [--save] [--full]
+devbox debug --docker-check
+devbox debug --ssm
 ```
 
-Add SSH config entry for VS Code Remote-SSH (automatically uses `devbox-{user_id}` as hostname):
+### Docker image helper
 
 ```sh
-devbox ssh-config
+devbox docker pull [--repository <name>] --tag <tag> [--prune] [--start] [--gui]
+devbox docker pull --list-repos
+devbox docker update [--repository <name>] --tag <tag> [--prune] [--start] [--gui]
 ```
 
-This writes a block like:
-
-```
-Host devbox-<your-id>
-    HostName i-xxxxxxxxxxxxxxxxx
-    User ec2-user
-    ProxyCommand sh -c "aws ssm start-session --target %h --document-name AWS-StartSSHSession --parameters 'portNumber=%p' --region ap-southeast-2"
-    StrictHostKeyChecking no
-    UserKnownHostsFile /dev/null
-```
-
-### Devcontainer stubs
-
-Create stub files with TODO notes for `.devcontainer/` and `.vscode/`:
+### Devcontainer
 
 ```sh
 devbox devcontainer generate --project-dir /path/to/repo
 ```
 
-### Docker image update
-
-```sh
-devbox docker update [--repository <name>] [--tag <tag>] [--prune]
-devbox docker update --list-repos
-```
+`devcontainer generate` is currently a TODO stub and does not create `.devcontainer/` or `.vscode/` files.
 
 ### Artifacts
 
@@ -89,19 +69,9 @@ devbox artifacts download <filename>
 devbox artifacts list
 ```
 
-## Notes
-
-- Use `--profile` to target a named AWS CLI profile.
-- If Git auth fails inside the devbox, you can temporarily copy a key for testing, but this is bad practice and not recommended.
-
 ## Environment Variables
 
-- AWS_PROFILE (default profile if --profile not set)
-- AWS_REGION / AWS_DEFAULT_REGION (default region)
-- SSH_PUBKEY_PATH (custom public key for devbox ssh)
-- SSH_KEY_PATH (private key path; uses <path>.pub)
-
-## Exit Codes
-
-- 0 success
-- non-zero for AWS/SSM errors, missing dependencies, or bad input
+- `DEVBOX_ALLOW_CLOUD_CONTROL_ON_CLOUD` (`1` to allow `devbox cloud ...` when running on a cloud instance)
+- `DEVBOX_ASSUME_CLOUD_INSTANCE` (`1` or `0` override for cloud instance detection)
+- `AWS_PROFILE`
+- `AWS_REGION` / `AWS_DEFAULT_REGION`

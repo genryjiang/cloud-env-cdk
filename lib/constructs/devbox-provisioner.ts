@@ -11,6 +11,7 @@ export interface DevboxProvisionerProps {
   userTable: dynamodb.Table;
   launchTemplate: ec2.LaunchTemplate;
   devboxRole: iam.Role;
+  securityGroup: ec2.SecurityGroup;
 }
 
 export class DevboxProvisioner extends Construct {
@@ -33,12 +34,14 @@ export class DevboxProvisioner extends Construct {
         USER_TABLE: props.userTable.tableName,
         LAUNCH_TEMPLATE_ID: props.launchTemplate.launchTemplateId!,
         SUBNET_IDS: props.vpc.privateSubnets.map(s => s.subnetId).join(','),
+        SECURITY_GROUP_ID: props.securityGroup.securityGroupId,
       },
       logGroup,
+      description: `Provisioner v${Date.now()}`,
     });
 
     props.userTable.grantReadWriteData(this.function);
-    
+
     this.function.addToRolePolicy(new iam.PolicyStatement({
       actions: [
         'ec2:RunInstances',
@@ -46,6 +49,11 @@ export class DevboxProvisioner extends Construct {
         'ec2:CreateTags',
         'ec2:StopInstances',
         'ec2:TerminateInstances',
+        'ec2:StartInstances',
+        'ec2:DescribeVolumes',
+        'ec2:CreateVolume',
+        'ec2:AttachVolume',
+        'ec2:DescribeSnapshots',
       ],
       resources: ['*'],
     }));
@@ -53,6 +61,16 @@ export class DevboxProvisioner extends Construct {
     this.function.addToRolePolicy(new iam.PolicyStatement({
       actions: ['iam:PassRole'],
       resources: [props.devboxRole.roleArn],
+    }));
+
+    this.function.addToRolePolicy(new iam.PolicyStatement({
+      actions: ['iam:CreateServiceLinkedRole'],
+      resources: ['arn:aws:iam::*:role/aws-service-role/spot.amazonaws.com/AWSServiceRoleForEC2Spot'],
+      conditions: {
+        StringLike: {
+          'iam:AWSServiceName': 'spot.amazonaws.com',
+        },
+      },
     }));
   }
 }

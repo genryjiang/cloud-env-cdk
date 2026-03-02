@@ -92,19 +92,21 @@ The `devbox` CLI in `cli/` wraps provisioning, status checks, and SSH helpers.
 Install:
 
 ```bash
-pipx install ./cli
+cd cli
+npm install
+npm link
 ```
 
 Common commands:
 
 ```bash
-devbox status
-devbox provision --wait
-devbox ssh-config
-devbox connect
+devbox cloud status
+devbox cloud provision --wait
+devbox cloud init
+devbox cloud connect
 ```
 
-Devcontainer stubs (creates TODO placeholders only):
+Devcontainer command (TODO stub, no files generated yet):
 
 ```bash
 devbox devcontainer generate --project-dir /path/to/repo

@@ -32,9 +32,12 @@ export class CloudDevEnvStack extends Stack {
       userTable: shared.userTable,
       launchTemplate: shared.launchTemplate,
       devboxRole: shared.devboxRole,
+      securityGroup: network.securityGroup,
     });
 
-    new DevboxLifecycle(this, 'Lifecycle');
+    new DevboxLifecycle(this, 'Lifecycle', {
+      userTable: shared.userTable,
+    });
 
     const api = new DevboxApi(this, 'Api', {
       provisionerFunction: provisioner.function,

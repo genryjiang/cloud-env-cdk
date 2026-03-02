@@ -1,4 +1,4 @@
-const { EC2Client, RunInstancesCommand, DescribeInstancesCommand, StopInstancesCommand, TerminateInstancesCommand, StartInstancesCommand } = require('@aws-sdk/client-ec2');
+const { EC2Client, RunInstancesCommand, DescribeInstancesCommand, StopInstancesCommand, TerminateInstancesCommand, StartInstancesCommand, DescribeVolumesCommand, CreateVolumeCommand, AttachVolumeCommand, DescribeSnapshotsCommand } = require('@aws-sdk/client-ec2');
 const { DynamoDBClient } = require('@aws-sdk/client-dynamodb');
 const { DynamoDBDocumentClient, PutCommand, GetCommand, DeleteCommand } = require('@aws-sdk/lib-dynamodb');
 
@@ -7,7 +7,7 @@ const ddb = DynamoDBDocumentClient.from(new DynamoDBClient());
 
 exports.handler = async (event) => {
   console.log('Event:', JSON.stringify(event, null, 2));
-  
+
   try {
     const body = event.body ? JSON.parse(event.body) : event.queryStringParameters || {};
     const { action, userId } = body;
@@ -55,7 +55,8 @@ async function provisionDevbox(userId) {
         }),
       };
     } else if (status === 'stopped') {
-      // Restart stopped instance
+      // Check if we need to restore from snapshot
+      await restoreVolumeFromSnapshot(existing.Item.instanceId, existing.Item.snapshotId);
       await ec2.send(new StartInstancesCommand({ InstanceIds: [existing.Item.instanceId] }));
       return {
         statusCode: 200,
@@ -66,10 +67,14 @@ async function provisionDevbox(userId) {
 
   const subnets = process.env.SUBNET_IDS.split(',');
   const result = await ec2.send(new RunInstancesCommand({
-    LaunchTemplate: { LaunchTemplateId: process.env.LAUNCH_TEMPLATE_ID },
+    LaunchTemplate: {
+      LaunchTemplateId: process.env.LAUNCH_TEMPLATE_ID,
+      Version: '$Latest'
+    },
     MinCount: 1,
     MaxCount: 1,
     SubnetId: subnets[0],
+    SecurityGroupIds: [process.env.SECURITY_GROUP_ID],
     TagSpecifications: [{
       ResourceType: 'instance',
       Tags: [
@@ -168,4 +173,87 @@ async function checkInstanceStatus(instanceId) {
   } catch (e) {
     return 'terminated';
   }
+}
+
+async function restoreVolumeFromSnapshot(instanceId, snapshotId) {
+  if (!snapshotId) {
+    console.log('No snapshot found, volume should already exist');
+    return;
+  }
+
+  // Check if volume already exists
+  const volumes = await ec2.send(new DescribeVolumesCommand({
+    Filters: [
+      { Name: 'attachment.instance-id', Values: [instanceId] },
+      { Name: 'attachment.device', Values: ['/dev/xvda'] }
+    ]
+  }));
+
+  if (volumes.Volumes && volumes.Volumes.length > 0) {
+    console.log('Volume already exists, no restoration needed');
+    return;
+  }
+
+  console.log(`Restoring volume from snapshot ${snapshotId}`);
+
+  // Get instance details for AZ
+  const instances = await ec2.send(new DescribeInstancesCommand({
+    InstanceIds: [instanceId]
+  }));
+  const instance = instances.Reservations[0]?.Instances[0];
+  const availabilityZone = instance.Placement.AvailabilityZone;
+
+  // Create volume from snapshot
+  const volume = await ec2.send(new CreateVolumeCommand({
+    SnapshotId: snapshotId,
+    AvailabilityZone: availabilityZone,
+    VolumeType: 'gp3',
+    Encrypted: true,
+    TagSpecifications: [{
+      ResourceType: 'volume',
+      Tags: [
+        { Key: 'InstanceId', Value: instanceId },
+        { Key: 'ManagedBy', Value: 'devbox-provisioner' },
+        { Key: 'RestoredFrom', Value: snapshotId }
+      ]
+    }]
+  }));
+
+  console.log(`Created volume ${volume.VolumeId} from snapshot`);
+
+  // Wait for volume to be available
+  await waitForVolume(volume.VolumeId);
+
+  // Attach volume to instance
+  await ec2.send(new AttachVolumeCommand({
+    VolumeId: volume.VolumeId,
+    InstanceId: instanceId,
+    Device: '/dev/xvda'
+  }));
+
+  console.log(`Attached volume ${volume.VolumeId} to instance ${instanceId}`);
+}
+
+async function waitForVolume(volumeId) {
+  const maxWait = 120000; // 2 minutes
+  const interval = 5000; // 5 seconds
+  let elapsed = 0;
+
+  while (elapsed < maxWait) {
+    const result = await ec2.send(new DescribeVolumesCommand({
+      VolumeIds: [volumeId]
+    }));
+
+    const volume = result.Volumes[0];
+    if (volume.State === 'available') {
+      console.log(`Volume ${volumeId} is available`);
+      return;
+    }
+
+    console.log(`Volume ${volumeId} state: ${volume.State}`);
+    await new Promise(resolve => setTimeout(resolve, interval));
+    elapsed += interval;
+  }
+
+  throw new Error(`Volume ${volumeId} did not become available within 2 minutes`);
 }
